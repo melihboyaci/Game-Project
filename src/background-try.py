@@ -11,11 +11,11 @@ pygame.display.set_caption("Sprite Animasyonlu Arkaplan")
 
 # FPS kontrolü
 clock = pygame.time.Clock()
-FPS = 30
+FPS = 25
 
 # Arkaplan frame dosya şablonu ve sayısı
-BG_FRAME_COUNT = 10  # Toplam frame sayısı (0'dan başlar, 11 frame için 0-10 arası)
-BG_FRAME_PATH = "assets/city 4/{}.png"  # Örnek: bg_0.png, bg_1.png, ... bg_7.png
+BG_FRAME_COUNT = 5  # Toplam frame sayısı (0'dan başlar, 11 frame için 0-10 arası)
+BG_FRAME_PATH = "assets/Ocean_5/{}.png"  # Örnek: bg_0.png, bg_1.png, ... bg_7.png
 
 # Tek tek PNG frame'leri yükle
 bg_frames = []
