@@ -50,6 +50,10 @@ while running:
 
     # FPS sınırı
     clock.tick(FPS)
+    if bg_index == len(bg_frames) - 1:
+        # Son frame'de bekle
+        pygame.time.delay(100000)
+        # Son frame'den sonra döngüye devam et
 
 # Pygame'i kapat
 pygame.quit()
