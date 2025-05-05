@@ -10,7 +10,7 @@ TILE_SIZE = 32
 screen = pygame.display.set_mode((TILE_SIZE * 30, TILE_SIZE * 20))
 pygame.display.set_caption("Tile Map Test")
 
-tileset = pygame.image.load("assets/Forest_TileSet/forest_tiles.png").convert_alpha()
+tileset = pygame.image.load("assets/Middle_Age_Assets/Forest_TileSet/forest_tiles.png").convert_alpha()
 
 # Tile'ları kes
 grassGround    = tileset.subsurface((0, 0, TILE_SIZE, TILE_SIZE))
@@ -47,7 +47,7 @@ while running:
     player.handle_input()
 
     
-    player.update_animation()
+    player.update()
     enemy.update_animation()
     enemy2.update_animation()
 
