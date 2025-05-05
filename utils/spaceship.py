@@ -12,11 +12,10 @@ class Spaceship:
 
         # Motor efekti için
         if engine_path and engine_size:
-            self.engine_image = pygame.image.load(engine_path).convert_alpha()
-            self.engine_image = pygame.transform.scale(self.engine_image, engine_size)
-            self.engine_size = engine_size
+            frames = load_sprite_sheet(engine_path, *engine_size)
+            self.engine_anim = AnimatedSprite(frames, position, frame_delay=90)
         else:
-            self.engine_image = None
+            self.engine_anim = None
 
     def update(self, keys, screen_width, screen_height):
         if keys[pygame.K_LEFT]:
@@ -36,24 +35,30 @@ class Spaceship:
         self.sprite.pos = tuple(self.position)
         self.sprite.update()
 
+        if self.engine_anim:
+            self.engine_anim.update()
+
+
+
     def draw(self, screen):
         # Yöne göre sprite'ı flip et
         image = self.sprite.image
         if self.direction == "left":
             image = pygame.transform.flip(image, True, False)
         screen.blit(image, self.sprite.pos)
+        
+        if self.engine_anim:
+            frame_width = self.engine_anim.frames[0].get_width()
+            frame_height = self.engine_anim.frames[0].get_height()
+            # Motoru geminin alt ortasına hizala
+            engine_pos = (
+                self.position[0] + self.size[0] // 2 - frame_width // 2,
+                self.position[1] + self.size[1] - frame_height // 2
+            )
+            self.engine_anim.flipped = (self.direction == "left")
+            self.engine_anim.pos = engine_pos
+            self.engine_anim.draw(screen)
 
-        # Motor efekti varsa önce onu çiz
-        if self.engine_image:
-            # Motorun pozisyonunu geminin arkasına göre ayarla
-            if self.direction == "right":
-                engine_pos = (self.sprite.pos[0] - self.engine_size[0] + 10, self.sprite.pos[1] + self.size[1] // 2 - self.engine_size[1] // 2)
-            else:
-                engine_pos = (self.sprite.pos[0] + self.size[0] - 10, self.sprite.pos[1] + self.size[1] // 2 - self.engine_size[1] // 2)
-            engine_img = self.engine_image
-            if self.direction == "left":
-                engine_img = pygame.transform.flip(self.engine_image, True, False)
-            screen.blit(engine_img, engine_pos)
 
     def get_rect(self):
         return pygame.Rect(self.position[0], self.position[1], self.size[0], self.size[1])

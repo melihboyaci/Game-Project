@@ -37,9 +37,11 @@ class game_loop:
             self.planets.append(planet)
 
         self.spaceship_path = "assets/Space_Stage_Assets/sprites/spaceship/1.png"
+        self.engine_path = "assets/Space_Stage_Assets/sprites/spaceship/engine.png"
+
         self.spaceship_position = (self.width // 2, self.height // 2)
         self.spaceship_speed = 5
-        self.spaceship = Spaceship(self.spaceship_path, self.spaceship_size, self.spaceship_position, self.spaceship_speed, )    
+        self.spaceship = Spaceship(self.spaceship_path, (64, 64), self.spaceship_position, self.spaceship_speed, engine_path=self.engine_path, engine_size=(41, 30))    
         
             
 
