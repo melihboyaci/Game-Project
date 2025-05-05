@@ -12,7 +12,7 @@ class game_loop:
         self.width, self.height = screen.get_size()
         self.bg_offset = {'x': 0, 'y': 0}
         self.bg_speed  = {'x': -0.1, 'y': 0.2}
-        self.bg_image = pygame.image.load("assets/ui/backgrounds/space4.png").convert_alpha()        
+        self.bg_image = pygame.image.load("assets/Space_Stage_Assets/ui/backgrounds/space4.png").convert_alpha()        
         self.bg_image = pygame.transform.scale(self.bg_image, (self.width, self.height))
         random.seed(27)
 
@@ -27,7 +27,7 @@ class game_loop:
 
         self.planets = []
         for i in range(self.planet_count):
-            planet_path = f"assets/sprites/planets/planet{i+1}.png"
+            planet_path = f"assets/Space_Stage_Assets/sprites/planets/planet{i+1}.png"
             size = self.planet_sizes[i]
             position = (
                 random.randint(0, self.width - size[0]), 
@@ -36,7 +36,7 @@ class game_loop:
             planet = Planet(planet_path, size, position)
             self.planets.append(planet)
 
-        self.spaceship_path = "assets/sprites/spaceship/1.png"
+        self.spaceship_path = "assets/Space_Stage_Assets/sprites/spaceship/1.png"
         self.spaceship_position = (self.width // 2, self.height // 2)
         self.spaceship_speed = 5
         self.spaceship = Spaceship(self.spaceship_path, self.spaceship_size, self.spaceship_position, self.spaceship_speed, )    

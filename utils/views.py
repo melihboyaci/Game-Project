@@ -1,18 +1,18 @@
 import pygame
 def start_screen(screen, clock, WINDOW_WIDTH=1280, WINDOW_HEIGHT=720):
     
-    pygame.mixer.music.load("assets/sounds/2.mp3")
+    pygame.mixer.music.load("assets/Space_Stage_Assets/sounds/2.mp3")
     pygame.mixer.music.set_volume(0.5)
     pygame.mixer.music.play(-1)
     
     backgrounds = []
     for i in range(1, 11):
-        background = pygame.image.load(f"assets/ui/start_background/{i}.png").convert_alpha()
+        background = pygame.image.load(f"assets/Space_Stage_Assets/ui/start_background/{i}.png").convert_alpha()
         background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
         backgrounds.append(background)
 
     
-    font = pygame.font.Font("assets/fonts/altroned.ttf", 50)
+    font = pygame.font.Font("assets/Space_Stage_Assets/fonts/altroned.ttf", 50)
     title = render_text_with_shadow(font, "My Game", (255, 255, 255), (50,50,50), (6, 6))
     subtitle = render_text_with_stroke(font, "Press SPACE to Start", (255, 255, 255), (0, 0, 0), 6)
 
