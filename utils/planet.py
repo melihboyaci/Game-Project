@@ -13,3 +13,6 @@ class Planet:
     
     def draw(self, surface):
         self.sprite.draw(surface)
+    
+    def get_rect(self):
+        return pygame.Rect(self.position, self.size)

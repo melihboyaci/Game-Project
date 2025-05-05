@@ -12,9 +12,9 @@ class game_loop:
         self.width, self.height = screen.get_size()
         self.bg_offset = {'x': 0, 'y': 0}
         self.bg_speed  = {'x': -0.1, 'y': 0.2}
-        self.bg_image = pygame.image.load("assets/Space_Stage_Assets/ui/backgrounds/space4.png").convert_alpha()        
+        self.bg_image = pygame.image.load("assets/Space_Stage_Assets/ui/backgrounds/space5.png").convert_alpha()        
         self.bg_image = pygame.transform.scale(self.bg_image, (self.width, self.height))
-        random.seed(27)
+        random.seed(15)
 
         
         self.planet_count = 4
@@ -54,6 +54,9 @@ class game_loop:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
+                elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
+                    # Mermi ateşleme işlemi
+                    self.spaceship.fire()
             
             self.screen.fill((0, 0, 0)) # Ekranı temizle siyah
             
@@ -67,8 +70,9 @@ class game_loop:
 
         
             self.spaceship.update(pygame.key.get_pressed(), self.width, self.height)
+
             self.spaceship.draw(self.screen)
-            
+
 
 
             pygame.display.flip() #ekran güncelle

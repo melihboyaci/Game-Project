@@ -1,5 +1,6 @@
 import pygame
 from utils.animation import AnimatedSprite, load_sprite_sheet
+from utils.bullet import Bullet
 
 class Spaceship:
     def __init__(self, image_path, size, position, speed, engine_path=None, engine_size=None):
@@ -8,7 +9,12 @@ class Spaceship:
         self.size = size
         self.position = list(position)
         self.speed = speed
-        self.direction = "right"  # "right" veya "left"
+        self.direction = "right"
+
+        self.bullets = []  # Mermileri saklamak için bir liste
+        self.last_shot_time = 0  # Son ateş etme zamanı
+        self.shoot_delay = 250  # Merminin ateşlenme gecikmesi (ms)
+
 
         # Motor efekti için
         if engine_path and engine_size:
@@ -35,11 +41,23 @@ class Spaceship:
         self.sprite.pos = tuple(self.position)
         self.sprite.update()
 
+        for bullet in self.bullets:
+            bullet.update()
+            # Merminin ekran dışına çıkıp çıkmadığını kontrol et
+            self.bullets = [b for b in self.bullets if 0 < b.position[0] < screen_width] 
+        
         if self.engine_anim:
             self.engine_anim.update()
 
 
-
+    def fire(self):
+        now = pygame.time.get_ticks()
+        if now - self.last_shot_time > self.shoot_delay:
+            bullet_position = (self.position[0] + self.size[0] // 2 + 10, self.position[1] + self.size[1] // 2)
+            self.bullets.append(Bullet(bullet_position))
+            self.last_shot_time = now
+    
+    
     def draw(self, screen):
         # Yöne göre sprite'ı flip et
         image = self.sprite.image
@@ -58,6 +76,9 @@ class Spaceship:
             self.engine_anim.flipped = (self.direction == "left")
             self.engine_anim.pos = engine_pos
             self.engine_anim.draw(screen)
+
+        for bullet in self.bullets:
+            bullet.draw(screen)    
 
 
     def get_rect(self):
