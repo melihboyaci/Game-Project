@@ -13,12 +13,14 @@ class Player:
             "idle": {},
             "walk": {},
             "attack1": {},
-            "attack2": {}
+            "attack2": {},
+            "hurt": {}
         }
         self.load_animations()
         self.state = "idle"
         self.frame_index = 0
         self.frame_timer = 0
+        self.hurt_timer = 0
         self.frame_speed = 100  # ms başına frame değişim hızı
         self.image = self.animations["idle"]["right"][0]
         self.rect = self.image.get_rect(center=(self.x, self.y))
@@ -29,7 +31,7 @@ class Player:
 
         # Attack tuşları
         self.attack_keys = {
-            "attack1": pygame.K_j,
+            "attack1": pygame.K_SPACE,
             "attack2": pygame.K_k
         }
 
@@ -50,6 +52,10 @@ class Player:
             "attack1": 0,
             "attack2": 0
         }
+
+        self.attack_once = False # Sadece bir kez saldırı yapabilmek için    
+        # Mesaj göstermek için
+        self.attack_message = ""
 
     def load_animation(self, sheet_path, frame_w, frame_h, scale_factor=2):
         sheet = pygame.image.load(sheet_path).convert_alpha()
@@ -81,12 +87,20 @@ class Player:
             "assets/Middle_Age_Assets/Tiny RPG Character Asset Pack v1.03 -Free Soldier&Orc/Characters(100x100)/Soldier/Soldier/Soldier-Attack02.png", 
             100, 100, scale_factor
         )
+        hurt_frames = self.load_animation(
+            "assets/Middle_Age_Assets/Tiny RPG Character Asset Pack v1.03 -Free Soldier&Orc/Characters(100x100)/Soldier/Soldier/Soldier-Hurt.png", 
+            100, 100, scale_factor
+        )
 
-        for state, base_frames in zip(["idle", "walk", "attack1", "attack2"], [base_idle, base_walk, attack1_frames, attack2_frames]):
+        for state, base_frames in zip(["idle", "walk", "attack1", "attack2", "hurt"], [base_idle, base_walk, attack1_frames, attack2_frames, hurt_frames]):
             self.animations[state]["right"] = base_frames
             self.animations[state]["left"]  = [pygame.transform.flip(f, True, False) for f in base_frames]
 
     def handle_input(self):
+        # eğer hurt durumundaysa ve 300 ms dolmadıysa
+        if self.state == "hurt" and pygame.time.get_ticks() - self.hurt_timer < 300:
+            return     # hiçbir input işleme, animasyon da update() içinde kalacak
+
         keys = pygame.key.get_pressed()
         moving = False
         now = pygame.time.get_ticks()
@@ -125,6 +139,7 @@ class Player:
                 self.frame_index = 0
                 self.frame_timer = now
                 self.last_attack_time[attack_name] = now
+                self.attack_message = f"{attack_name.upper()} kullanıldı!"
                 print(f"{attack_name} kullanıldı! Hasar: {self.attack_damage[attack_name]}")
                 return  # aynı anda başka hareket yapmasın
 
@@ -142,11 +157,18 @@ class Player:
         if now - self.frame_timer > self.frame_speed:
             self.frame_timer = now
             self.frame_index += 1
+
+            # Eğer animasyonun son karesine ulaşıldıysa
             if self.frame_index >= len(self.animations[self.state][self.direction]):
-                if self.state.startswith("attack"):
-                    self.state = "idle"
-                self.frame_index = 0
+                if self.state == "hurt":
+                    self.state = "idle"  # Hasar alma animasyonu bittiğinde 'idle' durumuna geç
+                elif self.state.startswith("attack"):
+                    self.state = "idle"  # Saldırı animasyonu bittiğinde 'idle' durumuna geç
+                self.frame_index = 0  # Animasyonu sıfırla
+
+            # Geçerli animasyon karesini güncelle
             self.image = self.animations[self.state][self.direction][self.frame_index]
+
 
     def draw_health_bar(self, surface):
         # Sağlık barı
@@ -160,28 +182,123 @@ class Player:
         pygame.draw.rect(surface, (0, 0, 0), (x, y, bar_width, bar_height), 2)  # Çerçeve
 
     def draw_cooldown_bar(self, surface):
-        # Attack2 cooldown barı
+        # Attack2 cooldown barı (sağlık barının yanında)
         now = pygame.time.get_ticks()
         cooldown = self.attack_cooldowns["attack2"]
         last_used = self.last_attack_time["attack2"]
         elapsed = min(now - last_used, cooldown)
         cooldown_ratio = elapsed / cooldown
 
-        bar_width = 200
+        bar_width = 100
         bar_height = 20
-        x = 20
-        y = 50
+        x = 250  # Sağlık barının hemen sağında
+        y = 20
         pygame.draw.rect(surface, (50, 50, 50), (x, y, bar_width, bar_height))  # Arkaplan (gri)
         pygame.draw.rect(surface, (0, 0, 255), (x, y, bar_width * cooldown_ratio, bar_height))  # Cooldown (mavi)
         pygame.draw.rect(surface, (0, 0, 0), (x, y, bar_width, bar_height), 2)  # Çerçeve
+
+    def draw_attack_info_message(self, surface):
+        font = pygame.font.Font(None, 25)
+        text = font.render("K:", True, (255, 255, 255))
+        surface.blit(text, (230, 20))  # Mesaj ekranın sol üstünde gösterilir
+
+
+    def attack(self, enemies):
+        """Saldırı mekanizması"""
+        keys = pygame.key.get_pressed()
+        if (keys[pygame.K_k] or keys[pygame.K_SPACE]):
+            if not self.attack_once:  # sadece ilk basışta çalışsın
+                # Saldırı durumunu kontrol et
+                if self.state not in self.attack_damage:
+                    print(f"Hata: '{self.state}' geçerli bir saldırı durumu değil.")
+                    return
+
+                for enemy in enemies:
+                    if self.get_collision_rect().colliderect(enemy.get_collision_rect()):  # Çarpışma kontrolü
+                        enemy.take_damage(self.attack_damage[self.state])
+                        print(f"Enemy hasar aldı! Kalan sağlık: {enemy.health}")
+                
+                self.attack_once = True  # saldırıyı kilitle
+        else:
+            self.attack_once = False  # tuş bırakıldığında sıfırla
+
+    def take_damage(self, damage):
+        """Hasar alma mekanizması"""
+        self.health -= damage
+        self.state = "hurt"
+        self.frame_index = 0
+        now = pygame.time.get_ticks()
+        self.frame_timer = now
+        self.hurt_timer = now 
+        self.image = self.animations["hurt"][self.direction][self.frame_index]  # Animasyonu hemen güncelle
+        print(f"Player {damage} hasar aldı! Kalan can: {self.health}")
+        if self.health <= 0:
+            self.die()
+
+    def die(self):
+        """Player öldüğünde yapılacak işlemler"""
+        print("Player öldü! Oyun bitti.")
+        pygame.quit()
+        exit()
+
+
+    def get_collision_rect(self):
+        """Daha küçük bir çarpışma alanı döndürür."""
+        collision_rect = self.rect.inflate(-self.rect.width * 0.7, -self.rect.height * 0.7)  # %40 küçült
+        return collision_rect
+
+    #çarpışma kontrolü için
+    def get_collision_rect(self):
+        # Daraltılmış çarpışma alanı
+        return self.rect.inflate(-self.rect.width * 0.9, -self.rect.height * 0.9)
+
+    def resolve_collision(self, other):
+        """
+        Diğer objenin daraltılmış collision rect'i ile kendi daraltılmış rect'inin overlap'ini gider.
+        other: ya bir pygame.Rect ya da get_collision_rect() döndüren obje
+        """
+        # other bir obje ise onun collision rect'ini al
+        other_rect = other.get_collision_rect() if hasattr(other, 'get_collision_rect') else other
+        self_rect  = self.get_collision_rect()
+
+        if not self_rect.colliderect(other_rect):
+            return
+        # çakışan bölge
+        overlap = self_rect.clip(other_rect)
+        # en kısa eksende itiş
+        if overlap.width < overlap.height:
+            # x ekseni
+            if self_rect.centerx < other_rect.centerx:
+                self.x -= overlap.width
+            else:
+                self.x += overlap.width
+        else:
+            # y ekseni
+            if self_rect.centery < other_rect.centery:
+                self.y -= overlap.height
+            else:
+                self.y += overlap.height
+        # rect'e yansıt
+        self.rect.center = (self.x, self.y)
+
 
     def draw(self, surface):
         surface.blit(self.image, (self.x, self.y))
         self.draw_health_bar(surface)
         self.draw_cooldown_bar(surface)
+        self.draw_attack_info_message(surface)
+        # Sağlık barı ve cooldown barı için mesaj
 
     def update(self):
-        # karakter rect güncelle
+        # Eğer 'hurt' durumundaysa, başka bir duruma geçme
+        if self.state == "hurt":
+            if pygame.time.get_ticks() - self.hurt_timer < 500:  # 500 ms boyunca 'hurt' durumunda kal
+                self.update_animation()  # 'hurt' durumunda animasyonu güncelle
+                return
+            else:
+                self.state = "idle"  # 'hurt' süresi dolduğunda 'idle' durumuna geç
+
+        # Karakter rect güncelle
         self.rect.center = (self.x, self.y)
-        # animasyonu güncelle
+        # Animasyonu güncelle
         self.update_animation()

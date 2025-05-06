@@ -1,0 +1,64 @@
+Bunun için “çarpışma tespiti”nden sonra iki objenin birbirinin içine girmesini engelleyecek bir “çarpışma çözümleme” (collision resolution) aşaması ekleyeceğiz. Yani, eğer iki rect üst üste biniyorsa — hem oyuncu‐düşman, hem de duvar‐oyuncu olabilir — en az müdahale ile birbirlerinden iteceğiz.
+
+Aşağıda senin Player sınıfına ekleyebileceğin, iki dikdörtgeni birbirinden ayıran (push‑out) bir yardımcı metot var. Bunu Enemy için de benzer şekilde kullanabilirsin.
+
+python
+Kopyala
+Düzenle
+class Player:
+    …
+
+    def resolve_collision(self, other_rect):
+        """Eğer self.rect ile other_rect çakışıyorsa, 
+           overlap eksenine göre en kısa yoldan ayır."""
+        if not self.rect.colliderect(other_rect):
+            return
+
+        # Çakışan bölge
+        overlap = self.rect.clip(other_rect)
+
+        # Hangi eksende daha az çakışma var?
+        if overlap.width < overlap.height:
+            # x ekseninde ayır
+            if self.rect.centerx < other_rect.centerx:
+                self.x -= overlap.width
+            else:
+                self.x += overlap.width
+        else:
+            # y ekseninde ayır
+            if self.rect.centery < other_rect.centery:
+                self.y -= overlap.height
+            else:
+                self.y += overlap.height
+
+        # Yeni x,y değerlerini rect’e yansıt
+        self.rect.center = (self.x, self.y)
+Nerede çağırmalı?
+1) Düşmanlarla çarpışma
+Main loop’unda veya game controller’da, her frame’den hemen sonra:
+
+python
+Kopyala
+Düzenle
+player.update()  
+for e in enemies:
+    e.update(player)
+    # Enemy ile player birbirine girerse itiştir:
+    player.resolve_collision(e.rect)
+    e.resolve_collision(player.rect)
+2) Duvar/tile çarpışması
+Eğer haritadaki katı (solid) tile’ların rect listesi varsa:
+
+python
+Kopyala
+Düzenle
+player.update()
+for wall_rect in solid_tiles:
+    player.resolve_collision(wall_rect)
+aynı mantıkla Enemy için de.
+
+Sonuç
+Bu “push‑out” metodu sayesinde, iki objenin overlap ettiği anda birbirini iterek dışarı çıkartacağız. Böylece görsel olarak iç içe geçme (“çok çirkin” dediğin) ortadan kalkacak.
+Aynı kodu Enemy sınıfına da ekleyip, Enemy.update()’den sonra self.resolve_collision(player.rect) dersen, düşman da üst üste bindiğinizde geri itilecektir.
+
+Bu yapıyı entegre edip dener misin? Başka bir sorun kalırsa yine çözeriz!

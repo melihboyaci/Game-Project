@@ -32,11 +32,10 @@ def draw_map():
 
 
 player = Player.Player(100, 100)
-enemy=Enemy.Enemy(200, 100)
-enemy2=Enemy.Enemy(300, 100)
-
 clock = pygame.time.Clock()
 running = True
+enemies = [Enemy.Enemy(300, 100), Enemy.Enemy(500, 200), Enemy.Enemy(1000, 1000)]  # Enemy nesneleri listesi
+
 while running:
     dt = clock.tick(60)
 
@@ -46,16 +45,31 @@ while running:
 
     player.handle_input()
 
-    
+    player.attack(enemies)
     player.update()
-    enemy.update_animation()
-    enemy2.update_animation()
 
+    # for e in enemies:
+    #     e.update(player)
+    #     # Enemy ile player birbirine girerse itiştir:
+    #     player.resolve_collision(e.rect)
+    #     e.resolve_collision(player.rect)
+  
+    # Enemy listesini güncelle
+    for enemy in enemies[:]:  # Listeyi kopyalayarak iterate edin
+        if not enemy.alive:  # Eğer enemy hayatta değilse
+            enemies.remove(enemy)  # Listeden kaldır
+        else:
+            enemy.update(player)
+            enemy.update_animation()
+    
     screen.fill((0, 0, 0))
     draw_map()
     player.draw(screen)
-    enemy.draw(screen)
-    enemy2.draw(screen)
+    
+    for enemy in enemies:
+        enemy.draw(screen)
+
     pygame.display.update()
+   
 
 pygame.quit()
