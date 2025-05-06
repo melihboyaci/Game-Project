@@ -16,7 +16,9 @@ class AnimatedSprite:
             self.last_update = now
 
     def draw(self, surface, pos):
-        surface.blit(self.image, pos)
+        image = self.image.copy()
+        image.set_alpha(170)
+        surface.blit(image, pos)
 
 def load_sprite_sheet(path, frame_width, frame_height):
     """Spritesheet'i yükler ve her kareyi bir listeye ayırır."""

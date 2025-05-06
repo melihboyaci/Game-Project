@@ -48,7 +48,7 @@ class Spaceship:
             # Merminin ekran dışına çıkıp çıkmadığını kontrol et
             self.bullets = [
                 b for b in self.bullets
-                if 0 < b.position[0] < self.map_width and 0 < b.position[1] < self.map_height
+                if 0 <= b.position[0] <= self.map_width and 0 <= b.position[1] <= self.map_height
             ] 
         
         if self.engine_anim:
