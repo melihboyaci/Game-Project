@@ -11,8 +11,9 @@ class Planet:
     def update(self):
         self.sprite.update()
     
-    def draw(self, surface):
-        self.sprite.draw(surface)
+    def draw(self, surface, camera_offset):
+        surface_pos = (self.position[0] - camera_offset[0], self.position[1] - camera_offset[1])
+        self.sprite.draw(surface, surface_pos)
     
     def get_rect(self):
         return pygame.Rect(self.position, self.size)
