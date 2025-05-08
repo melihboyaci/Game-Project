@@ -14,7 +14,8 @@ class Player:
             "walk": {},
             "attack1": {},
             "attack2": {},
-            "hurt": {}
+            "hurt": {},
+            "death": {}
         }
         self.load_animations()
         self.state = "idle"
@@ -91,8 +92,13 @@ class Player:
             "assets/Middle_Age_Assets/Tiny RPG Character Asset Pack v1.03 -Free Soldier&Orc/Characters(100x100)/Soldier/Soldier/Soldier-Hurt.png", 
             100, 100, scale_factor
         )
+        death_frames = self.load_animation(
+            "assets/Middle_Age_Assets/Tiny RPG Character Asset Pack v1.03 -Free Soldier&Orc/Characters(100x100)/Soldier/Soldier/Soldier-Death.png", 
+            100, 100, scale_factor
+        )
 
-        for state, base_frames in zip(["idle", "walk", "attack1", "attack2", "hurt"], [base_idle, base_walk, attack1_frames, attack2_frames, hurt_frames]):
+        for state, base_frames in zip(["idle", "walk", "attack1", "attack2", "hurt", "death"], 
+                                    [base_idle, base_walk, attack1_frames, attack2_frames, hurt_frames, death_frames]):
             self.animations[state]["right"] = base_frames
             self.animations[state]["left"]  = [pygame.transform.flip(f, True, False) for f in base_frames]
 
@@ -164,11 +170,13 @@ class Player:
                     self.state = "idle"  # Hasar alma animasyonu bittiğinde 'idle' durumuna geç
                 elif self.state.startswith("attack"):
                     self.state = "idle"  # Saldırı animasyonu bittiğinde 'idle' durumuna geç
+                elif self.state == "death":
+                    self.frame_index = len(self.animations["death"][self.direction]) - 1  # Ölüm animasyonunda son karede kal
+                    return
                 self.frame_index = 0  # Animasyonu sıfırla
 
             # Geçerli animasyon karesini güncelle
             self.image = self.animations[self.state][self.direction][self.frame_index]
-
 
     def draw_health_bar(self, surface):
         # Sağlık barı
@@ -233,6 +241,10 @@ class Player:
         self.image = self.animations["hurt"][self.direction][self.frame_index]  # Animasyonu hemen güncelle
         print(f"Player {damage} hasar aldı! Kalan can: {self.health}")
         if self.health <= 0:
+            self.state = "death"
+            self.frame_index = 0
+            self.frame_timer = pygame.time.get_ticks()
+            self.image = self.animations["death"][self.direction][self.frame_index]  # Ölüm animasyonunu başlat  
             self.die()
 
     def die(self):
@@ -290,10 +302,20 @@ class Player:
         # Sağlık barı ve cooldown barı için mesaj
 
     def update(self):
+        # Eğer 'death' durumundaysa, animasyonu tamamla ve oyunu sonlandır
+        if self.state == "death":
+            if self.frame_index >= len(self.animations["death"][self.direction]) - 1:
+                print("Player öldü! Oyun sonlandırılıyor.")
+                pygame.quit()
+                exit()
+            else:
+                self.update_animation()
+                return
+
         # Eğer 'hurt' durumundaysa, başka bir duruma geçme
         if self.state == "hurt":
             if pygame.time.get_ticks() - self.hurt_timer < 500:  # 500 ms boyunca 'hurt' durumunda kal
-                self.update_animation()  # 'hurt' durumunda animasyonu güncelle
+                self.update_animation()
                 return
             else:
                 self.state = "idle"  # 'hurt' süresi dolduğunda 'idle' durumuna geç

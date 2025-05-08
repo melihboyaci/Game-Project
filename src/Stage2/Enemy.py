@@ -11,7 +11,8 @@ class Enemy:
             "idle": {},
             "walk": {},
             "attack": {},
-            "hurt": {}  # Hasar alma animasyonu
+            "hurt": {},  # Hasar alma animasyonu
+            "death": {}  # Ölüm animasyonu
         }
         self.load_animations()
         self.state = "idle"
@@ -64,24 +65,33 @@ class Enemy:
             100, 100, scale_factor
         )
         base_hurt = self.load_animation(
-            "assets/Middle_Age_Assets/Tiny RPG Character Asset Pack v1.03 -Free Soldier&Orc/Characters(100x100)/Orc/Orc/Orc-Hurt.png", 
-            100, 100, scale_factor
+        "assets/Middle_Age_Assets/Tiny RPG Character Asset Pack v1.03 -Free Soldier&Orc/Characters(100x100)/Orc/Orc/Orc-Hurt.png", 
+        100, 100, scale_factor
+        )
+        base_death = self.load_animation(
+        "assets/Middle_Age_Assets/Tiny RPG Character Asset Pack v1.03 -Free Soldier&Orc/Characters(100x100)/Orc/Orc/Orc-Death.png", 
+        100, 100, scale_factor
         )
 
-        for state, base_frames in zip(["idle", "walk", "attack", "hurt"], [base_idle, base_walk, base_attack, base_hurt]):
+        for state, base_frames in zip(["idle", "walk", "attack", "hurt", "death"], 
+                                    [base_idle, base_walk, base_attack, base_hurt, base_death]):
             self.animations[state]["right"] = base_frames
             self.animations[state]["left"]  = [pygame.transform.flip(f, True, False) for f in base_frames]
 
     def take_damage(self, damage):
-        """Hasar alma mekanizması"""
         self.health -= damage
         self.state = "hurt"
         self.frame_index = 0
-        self.frame_timer = pygame.time.get_ticks()-90  # Hasar alma animasyonunu başlat
-        self.hurt_timer = pygame.time.get_ticks()  # Hasar alma durumunu kilitlemek için zamanlayıcı
-        self.image = self.animations["hurt"][self.direction][self.frame_index]  # Animasyonu hemen güncelle
+        self.frame_timer = pygame.time.get_ticks() - 90
+        self.hurt_timer = pygame.time.get_ticks()
+        self.image = self.animations["hurt"][self.direction][self.frame_index]
+
         if self.health <= 0:
-            self.die()
+            self.state = "death"
+            self.frame_index = 0
+            self.frame_timer = pygame.time.get_ticks()
+            self.image = self.animations["death"][self.direction][self.frame_index]
+
 
     def get_collision_rect(self):
         """Daha küçük bir çarpışma alanı döndürür."""
@@ -112,10 +122,21 @@ class Enemy:
             self.last_attack_time = now
 
     def update(self, player):
+        # Eğer 'death' durumundaysa, animasyonu tamamla ve oyundan kaldır
+        if self.state == "death":
+            if self.frame_index >= len(self.animations["death"][self.direction]) - 1:
+                # Ölüm animasyonu tamamlandıktan sonra kaldır
+                print("Enemy öldü ve oyundan kaldırılıyor.")
+                self.die()
+                return
+            else:
+                self.update_animation()  # Ölüm animasyonu devam ediyor
+                return
 
         # Eğer 'hurt' durumundaysa, başka bir duruma geçme
         if self.state == "hurt":
             if pygame.time.get_ticks() - self.hurt_timer < 500:  # 500 ms boyunca 'hurt' durumunda kal
+                self.update_animation()
                 return
             else:
                 self.state = "idle"  # 'hurt' süresi dolduğunda 'idle' durumuna geç
@@ -123,10 +144,10 @@ class Enemy:
         # Player ile aradaki mesafe
         dx = player.x - self.x
         dy = player.y - self.y
-        distance = (dx*dx + dy*dy)**0.5
+        distance = (dx * dx + dy * dy) ** 0.5
 
         # Yön belirle
-        self.direction = "right" if dx>0 else "left"
+        self.direction = "right" if dx > 0 else "left"
 
         if distance <= self.get_collision_rect().colliderect(player.get_collision_rect()):
             # menzile girdiyse saldır
@@ -135,8 +156,8 @@ class Enemy:
             # menzil dışındaysa yürüsün
             self.state = "walk"
             norm = max(1, distance)
-            self.x += self.speed * dx/norm
-            self.y += self.speed * dy/norm
+            self.x += self.speed * dx / norm
+            self.y += self.speed * dy / norm
 
         self.rect.center = (self.x, self.y)
         self.update_animation()
@@ -180,11 +201,19 @@ class Enemy:
         if now - self.frame_timer > self.frame_speed:
             self.frame_timer = now
             self.frame_index += 1
+
+            # Eğer animasyonun son karesine ulaşıldıysa
             if self.frame_index >= len(self.animations[self.state][self.direction]):
                 if self.state == "hurt":
-                    self.state = "idle"  # Hasar alma animasyonu bittiğinde idle durumuna geç
-                self.frame_index = 0
+                    self.state = "idle"  # Hasar alma animasyonu bittiğinde 'idle' durumuna geç
+                elif self.state == "death":
+                    self.frame_index = len(self.animations["death"][self.direction]) - 1  # Ölüm animasyonunda son karede kal
+                    return
+                self.frame_index = 0  # Animasyonu sıfırla
+
+            # Geçerli animasyon karesini güncelle
             self.image = self.animations[self.state][self.direction][self.frame_index]
+
 
     def draw(self, surface):
         surface.blit(self.image, (self.x, self.y))
