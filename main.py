@@ -12,7 +12,7 @@ def main():
     pygame.init()
     start_screen(screen, clock)
 
-    game = game_loop(screen, clock)
+    game = game_loop(screen, clock) 
     
     game.run() 
 
@@ -21,3 +21,4 @@ def main():
 
 if __name__ == "__main__": 
     main()
+    

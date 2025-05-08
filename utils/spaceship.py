@@ -32,11 +32,12 @@ class Spaceship:
         if keys[pygame.K_RIGHT]:
             self.position[0] += self.speed
             self.direction = "right"
+
         if keys[pygame.K_UP]:
             self.position[1] -= self.speed
         if keys[pygame.K_DOWN]:
             self.position[1] += self.speed
-
+            
         # Ekranın dışına çıkmaması için sınırları kontrol et
         self.position[0] = max(0, min(self.position[0], self.map_width - self.size[0]))
         self.position[1] = max(0, min(self.position[1], self.map_height - self.size[1]))
@@ -60,6 +61,7 @@ class Spaceship:
             )
             self.engine_anim.pos = engine_pos
             self.engine_anim.update()
+
 
 
     def fire(self):

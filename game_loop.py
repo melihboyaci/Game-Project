@@ -19,6 +19,10 @@ class game_loop:
         self.map_height = 2000
         self.camera_pos = [0, 0]
         self.earth_bar = 100
+        self.bar_width = 300
+        self.bar_height = 20
+        self.bar_x = (self.width - self.bar_width) // 2
+        self.bar_y = 20
 
 
         ## Gezegenlerin boyutları ve konumları
@@ -78,6 +82,7 @@ class game_loop:
             
             enemy = EnemySpaceship(self.enemy_image, (64, 64), base_pos, 2, self.earth)
             self.enemy_spaceships.append(enemy)
+ 
 
     def update_camera(self):
             self.camera_pos[0] = self.spaceship.position[0] + self.spaceship.size[0] // 2 - self.width // 2
@@ -87,11 +92,18 @@ class game_loop:
             
         
     def run(self):
-       
-    
+
         # Oyun döngüsü
         running = True
         while running:
+            #tema müziği
+            #get_busy() ile müziğin çalıp çalmadığını kontrol eder
+            if not pygame.mixer.music.get_busy():
+                pygame.mixer.music.load("assets/Space_Stage_Assets/sounds/space_journey.mp3")
+                pygame.mixer.music.set_volume(0.3)
+                pygame.mixer.music.play(-1)
+
+            #space tuşuna basıldığında ateş et
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -100,26 +112,34 @@ class game_loop:
                     self.spaceship.fire()
             
             self.screen.fill((0, 0, 0)) # Ekranı temizle siyah
-            bar_width = 300
-            bar_height = 20
-            bar_x = (self.width - bar_width) // 2
-            bar_y = 20
-        
             
             #hareketli arka plan
             draw_scrolling_bg(self.screen, self.bg_image, self.bg_offset, self.bg_speed)
-
+            
             for planet in self.planets:
                 planet.update()
                 planet.draw(self.screen, self.camera_pos)
 
+            # Düşman gemilerinin güncellenmesi ve çizilmesi
             enemies_to_remove = []
-            for enemy in self.enemy_spaceships[:]:  # Iterate over a copy of the list
-                enemy.update()
-                enemy.draw(self.screen, self.camera_pos)
+            for idx, enemy in enumerate(self.enemy_spaceships):
+                # Eski pozisyonu kaydet
+                old_pos = enemy.position[:]
+                enemy.update()                # Diğer düşmanlarla mesafe kontrolü
+                for j, other in enumerate(self.enemy_spaceships):
+                    if idx == j:
+                        continue
+                    dist = ((enemy.position[0] - other.position[0]) ** 2 + (enemy.position[1] - other.position[1]) ** 2) ** 0.5
+                    if dist < 10:
+                        # Çok yaklaştıysa eski pozisyona geri dön
+                        enemy.position = old_pos
+                        enemy.sprite.pos = tuple(old_pos)
+                        break
+                enemy.draw(self.screen, self.camera_pos)                
                 if enemy.get_rect().colliderect(self.earth.get_rect()):
                     enemies_to_remove.append(enemy)
                     self.earth_bar -= 10
+                self.enemy_spaceships = [enemy for enemy in self.enemy_spaceships if enemy.health >= 0]    
             for enemy in enemies_to_remove:
                 self.enemy_spaceships.remove(enemy)
 
@@ -132,13 +152,12 @@ class game_loop:
 
         
             self.spaceship.update(pygame.key.get_pressed())
-
             self.spaceship.draw(self.screen, self.camera_pos)
-
             self.update_camera() # Kamera güncelle
 
-            pygame.draw.rect(self.screen, (100, 100, 100), (bar_x, bar_y, bar_width, bar_height))  # Arka plan
-            pygame.draw.rect(self.screen, (0, 200, 0), (bar_x, bar_y, int(bar_width * self.earth_bar / 100), bar_height))  # Doluluk
+            # Dünya için can barı
+            pygame.draw.rect(self.screen, (100, 100, 100), (self.bar_x, self.bar_y, self.bar_width, self.bar_height))  # Arka plan
+            pygame.draw.rect(self.screen, (0, 200, 0), (self.bar_x, self.bar_y, int(self.bar_width * self.earth_bar / 100), self.bar_height))  # Doluluk
 
             pygame.display.flip() #ekran güncelle
             

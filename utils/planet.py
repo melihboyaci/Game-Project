@@ -6,7 +6,7 @@ class Planet:
 
     def __init__(self, image_path, size, position, scale):
         self.frames = load_sprite_sheet(image_path, *size)
-        self.sprite = AnimatedSprite(self.frames, position)
+        self.sprite = AnimatedSprite(self.frames, position, frame_delay=60)
         self.size = size
         self.position = position
         self.scale = scale

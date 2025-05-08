@@ -1,6 +1,6 @@
 import pygame
 class AnimatedSprite:
-    def __init__(self, frames, pos, frame_delay=60): #self: animasyonun kendisi, frames: kareler, pos: konum, frame_delay: her bir kare için bekleme süresi
+    def __init__(self, frames, pos, frame_delay=100): #self: animasyonun kendisi, frames: kareler, pos: konum, frame_delay: her bir kare için bekleme süresi
         self.frames = frames
         self.index = 0
         self.image = self.frames[self.index]
@@ -17,7 +17,7 @@ class AnimatedSprite:
 
     def draw(self, surface, pos):
         image = self.image.copy()
-        image.set_alpha(170)
+        image.set_alpha(255)
         surface.blit(image, pos)
 
 def load_sprite_sheet(path, frame_width, frame_height):

@@ -18,7 +18,11 @@ class EnemySpaceship:
         self.destination = self.random_destination()
         self.see_distance = 400  # Görüş mesafesi
         self.health = 3
-
+        self.explosion_frames = load_sprite_sheet("assets/Space_Stage_Assets/sprites/spaceship/explosion.png", 65, 64)
+        self.explosion_sprite = AnimatedSprite(self.explosion_frames, position, frame_delay=80)
+        self.exploding = False
+        self.explosion_time = 0
+        self.explosion_duration = 720  # ms
 
     def take_damage(self, damage):
         self.health -= damage
@@ -26,6 +30,8 @@ class EnemySpaceship:
             self.die()
 
     def die(self):
+        self.exploding = True
+        self.explosion_time = pygame.time.get_ticks()
         # düşman haritadan silinir
         self.sprite.image = pygame.Surface((0, 0))  # Görünmez yap
         self.sprite.update = lambda: None  # Güncellemeyi durdur
@@ -36,6 +42,16 @@ class EnemySpaceship:
         return [random.randint(0, 2000 - self.size[0]), random.randint(0, 2000 - self.size[1])]
 
     def update(self):
+        if self.exploding:
+            self.explosion_sprite.pos = tuple(self.position)
+            self.explosion_sprite.update()
+            sound = pygame.mixer.Sound("assets/Space_Stage_Assets/sounds/explosion.wav")
+            sound.set_volume(0.07)  # Sesin ses seviyesini ayarla
+            sound.play()
+
+            if pygame.time.get_ticks() - self.explosion_time > self.explosion_duration:
+                self.health = -99
+                return
         # Eğer oyuncu görüş mesafesinde ise ona yönel ve ateş et
         dx = self.target.position[0] - self.position[0]
         dy = self.target.position[1] - self.position[1]
@@ -85,8 +101,14 @@ class EnemySpaceship:
 
     def draw(self, screen, camera_offset):
         screen_pos = (self.position[0] - camera_offset[0], self.position[1] - camera_offset[1])
+        
+        if self.exploding:
+            self.explosion_sprite.draw(screen, screen_pos)
+            return
+
         self.sprite.pos = screen_pos
-        screen.blit(self.sprite.image, screen_pos)
+        image = self.sprite.image.copy()
+        screen.blit(image, screen_pos)
         for bullet in self.bullets:
             bullet_screen_pos = (bullet.position[0] - camera_offset[0], bullet.position[1] - camera_offset[1])
             screen.blit(bullet.image, bullet_screen_pos)
