@@ -19,10 +19,10 @@ class EnemySpaceship:
         self.see_distance = 400  # Görüş mesafesi
         self.health = 3
         self.explosion_frames = load_sprite_sheet("assets/Space_Stage_Assets/sprites/spaceship/explosion.png", 65, 64)
-        self.explosion_sprite = AnimatedSprite(self.explosion_frames, position, frame_delay=80)
+        self.explosion_sprite = AnimatedSprite(self.explosion_frames, position, frame_delay=100)
         self.exploding = False
         self.explosion_time = 0
-        self.explosion_duration = 720  # ms
+        self.explosion_duration = 900  # ms
 
     def take_damage(self, damage):
         self.health -= damage

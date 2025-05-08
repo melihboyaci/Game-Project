@@ -2,8 +2,6 @@ import pygame
 from utils.animation import AnimatedSprite, load_sprite_sheet
 import random
 class Planet:
-    SCALE_WITHOUT_ALPHA = 1.5  # Scale value where alpha transparency is not applied
-
     def __init__(self, image_path, size, position, scale):
         self.frames = load_sprite_sheet(image_path, *size)
         self.sprite = AnimatedSprite(self.frames, position, frame_delay=60)
@@ -19,7 +17,7 @@ class Planet:
         image = self.sprite.image.copy()
         new_size = (int(self.size[0] * self.scale), int(self.size[1] * self.scale))
         image = pygame.transform.scale(image, new_size)
-        if self.scale != self.SCALE_WITHOUT_ALPHA:
+        if self.scale != 1.5:
             image.set_alpha(130)
         surface.blit(image, surface_pos)
     
