@@ -146,3 +146,13 @@ def draw_scrolling_bg(screen, bg_image, offset, speed):
     screen.blit(bg_image, ( w-ox,  -oy   ))
     screen.blit(bg_image, ( -ox,   h-oy  ))
     screen.blit(bg_image, ( w-ox,  h-oy  ))
+
+def draw_earth_bar(screen, earth_bar):
+    bar_width = 300
+    bar_height = 20
+    bar_x = (screen.get_width() - bar_width) // 2
+    bar_y = 20
+    earth_bar = earth_bar
+
+    pygame.draw.rect(screen, (100, 100 ,100), (bar_x, bar_y, bar_width, bar_height))
+    pygame.draw.rect(screen, (0, 200, 0), (bar_x, bar_y, bar_width * (earth_bar / 100), bar_height))

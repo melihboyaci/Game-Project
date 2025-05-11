@@ -11,18 +11,18 @@ class EnemySpaceship:
         self.size = size
         self.position = list(position)
         self.speed = speed
-        self.target = target  # Player spaceship referansı
+        self.target = target 
         self.bullets = []
         self.last_shot_time = 0
         self.shoot_delay = 1000  # ms
         self.destination = self.random_destination()
-        self.see_distance = 400  # Görüş mesafesi
-        self.health = 3
+        self.see_distance = 600  # Görüş mesafesi
+        self.health = 2
         self.explosion_frames = load_sprite_sheet("assets/Space_Stage_Assets/sprites/spaceship/explosion.png", 65, 64)
-        self.explosion_sprite = AnimatedSprite(self.explosion_frames, position, frame_delay=100)
+        self.explosion_sprite = AnimatedSprite(self.explosion_frames, position, frame_delay=90)
         self.exploding = False
         self.explosion_time = 0
-        self.explosion_duration = 900  # ms
+        self.explosion_duration = 810  # ms
 
     def take_damage(self, damage):
         self.health -= damage
@@ -46,13 +46,14 @@ class EnemySpaceship:
             self.explosion_sprite.pos = tuple(self.position)
             self.explosion_sprite.update()
             sound = pygame.mixer.Sound("assets/Space_Stage_Assets/sounds/explosion.wav")
-            sound.set_volume(0.07)  # Sesin ses seviyesini ayarla
+            sound.set_volume(0.05)  # Sesin ses seviyesini ayarla
             sound.play()
 
             if pygame.time.get_ticks() - self.explosion_time > self.explosion_duration:
                 self.health = -99
                 return
-        # Eğer oyuncu görüş mesafesinde ise ona yönel ve ateş et
+        
+        # Eğer dünya görüş mesafesinde ise ona yönel
         dx = self.target.position[0] - self.position[0]
         dy = self.target.position[1] - self.position[1]
         distance = math.hypot(dx, dy)

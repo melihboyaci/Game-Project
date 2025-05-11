@@ -2,10 +2,12 @@ import pygame
 from utils.planet import Planet
 import random
 from utils.animation import AnimatedSprite, load_sprite_sheet
-from utils.views import draw_scrolling_bg
+from utils.views import draw_scrolling_bg, draw_earth_bar
 from utils.spaceship import Spaceship
 from utils.enemy_spaceship import EnemySpaceship
 from utils.enemybase import EnemyBase
+from utils.camera import Camera
+from managers.enemy_manager import EnemyManager
 
 class game_loop:
     def __init__(self, screen, clock):
@@ -18,15 +20,17 @@ class game_loop:
         self.bg_image = pygame.transform.scale(self.bg_image, (self.width, self.height))
         self.map_width = 2000
         self.map_height = 2000
-        self.camera_pos = [0, 0]
+        #self.camera_pos = [0, 0]
         self.earth_bar = 100
-        self.bar_width = 300
+        """self.bar_width = 300
         self.bar_height = 20
         self.bar_x = (self.width - self.bar_width) // 2
-        self.bar_y = 20
+        self.bar_y = 20"""
         self.last_enemy_spawn_time = pygame.time.get_ticks()
         self.last_enemy_spawn = pygame.time.get_ticks()
-
+        
+        self.camera = Camera(self.width, self.height, self.map_width, self.map_height)
+    
 
         ## Gezegenlerin boyutları ve konumları
         """self.planet_count = 6
@@ -53,6 +57,7 @@ class game_loop:
             self.planets.append(planet)"""
         
         
+        # Dünya
         earth_path = "assets/Space_Stage_Assets/sprites/planets/earth.png"
         earth_size = (300, 300)
         earth_pos = (
@@ -75,7 +80,10 @@ class game_loop:
             self.earth.position[1] + self.earth.size[1] // 2
         )
 
-        max_distance = -1
+        self.enemy_manager = EnemyManager(self.camera, self.earth, self.earth_bar)
+
+        # dünya merkezine en uzak köşeyi bul
+        """max_distance = -1
         base_pos = None
         for corner in corners:
             distance = ((corner[0] - earth_center[0]) ** 2 + (corner[1] - earth_center[1]) ** 2) ** 0.5
@@ -87,12 +95,7 @@ class game_loop:
         enemy_base_path = "assets/Space_Stage_Assets/sprites/enemybase/base.png"
         enemy_base_size = (128, 128)
         enemy_base = EnemyBase(enemy_base_path, enemy_base_size, base_pos)
-        self.enemy_base = enemy_base
-        base_center = (
-            self.enemy_base.position[0] + self.enemy_base.size[0] * self.enemy_base.scale // 2,
-            self.enemy_base.position[1] + self.enemy_base.size[1] * self.enemy_base.scale // 2
-        )
-       
+        self.enemy_base = enemy_base"""
 
         self.spaceship_path = "assets/Space_Stage_Assets/sprites/spaceship/1.png"
         self.engine_path = "assets/Space_Stage_Assets/sprites/spaceship/engine.png"
@@ -101,32 +104,14 @@ class game_loop:
             earth_pos[0] + earth_size[0] // 2 - spaceship_size[0] // 2 + 150,
             earth_pos[1] - spaceship_size[1] - 20 
         )
-        self.spaceship_speed = 5
+        self.spaceship_speed = 6
         self.spaceship = Spaceship(self.spaceship_path, spaceship_size, self.spaceship_position, self.spaceship_speed, engine_path=self.engine_path, engine_size=(41, 30))    
         
         #düşman gemisi
         self.enemy_spaceships = []
-        enemy_size = (64, 64)
         self.enemy_image = "assets/Space_Stage_Assets/sprites/spaceship/2.png"
-        for i in range(5):
-            # Her düşmanı base'in merkezinden biraz farklı bir noktada spawnla
-            offset_x = random.randint(-20, 20)
-            offset_y = random.randint(-20, 20)
-            spawn_pos = (
-                base_center[0] - enemy_size[0] // 2 + offset_x,
-                base_center[1] - enemy_size[1] // 2 + offset_y
-            )
-            enemy = EnemySpaceship(self.enemy_image, enemy_size, spawn_pos, 2, self.earth)
-            self.enemy_spaceships.append(enemy)
- 
 
-    def update_camera(self):
-            self.camera_pos[0] = self.spaceship.position[0] + self.spaceship.size[0] // 2 - self.width // 2
-            self.camera_pos[1] = self.spaceship.position[1] + self.spaceship.size[1] // 2 - self.height // 2
-            self.camera_pos[0] = max(0, min(self.camera_pos[0], self.map_width - self.width))
-            self.camera_pos[1] = max(0, min(self.camera_pos[1], self.map_height - self.height))
-
-    def spawn_enemy(self):
+    """def spawn_enemy(self):
         if not self.enemy_base or not self.enemy_base.alive:
             return
         enemy_size = (64, 64)
@@ -139,8 +124,8 @@ class game_loop:
             base_center[1] - enemy_size[1] // 2
         )
         
-        enemy = EnemySpaceship(self.enemy_image, enemy_size, spawn_pos, 2, self.earth)
-        self.enemy_spaceships.append(enemy)
+        enemy = EnemySpaceship(self.enemy_image, enemy_size, spawn_pos, 3.5, self.earth)
+        self.enemy_spaceships.append(enemy)"""
 
         
     def run(self):
@@ -151,7 +136,7 @@ class game_loop:
             #tema müziği
             #get_busy() ile müziğin çalıp çalmadığını kontrol eder
             if not pygame.mixer.music.get_busy():
-                pygame.mixer.music.load("assets/Space_Stage_Assets/sounds/Skyfire.mp3")
+                pygame.mixer.music.load("assets/Space_Stage_Assets/sounds/space_journey.mp3")
                 pygame.mixer.music.set_volume(0.3)
                 pygame.mixer.music.play(-1) # Sonsuz döngüde çal
 
@@ -165,16 +150,16 @@ class game_loop:
         
             
             self.screen.fill((0, 0, 0)) # Ekranı temizle siyah
-            
+    
             #hareketli arka plan
             draw_scrolling_bg(self.screen, self.bg_image, self.bg_offset, self.bg_speed)
             
             for planet in self.planets:
                 planet.update()
-                planet.draw(self.screen, self.camera_pos)
+                planet.draw(self.screen, self.camera.pos)
 
             # Düşman gemilerinin güncellenmesi ve çizilmesi
-            enemies_to_remove = []
+            """enemies_to_remove = []
             for idx, enemy in enumerate(self.enemy_spaceships):
                 old_pos = enemy.position[:]
                 enemy.update()
@@ -190,7 +175,7 @@ class game_loop:
                         if hasattr(enemy, "destination"):
                             enemy.destination = enemy.random_destination()
                         break
-                enemy.draw(self.screen, self.camera_pos)                
+                enemy.draw(self.screen, self.camera.pos)                
                 if enemy.get_rect().colliderect(self.earth.get_rect()):
                     enemies_to_remove.append(enemy)
                     self.earth_bar -= 10
@@ -200,7 +185,7 @@ class game_loop:
             for enemy in enemies_to_remove:
                 for enemy in enemies_to_remove:
                     if enemy in self.enemy_spaceships:
-                        self.enemy_spaceships.remove(enemy)
+                        self.enemy_spaceships.remove(enemy)""""""
 
             for bullet in self.spaceship.bullets:
                 for enemy in self.enemy_spaceships:
@@ -210,23 +195,32 @@ class game_loop:
                         break
 
         
+            self.camera.update(self.spaceship.position, self.spaceship.size)
             self.spaceship.update(pygame.key.get_pressed())
-            self.spaceship.draw(self.screen, self.camera_pos)
-            self.update_camera() # Kamera güncelle
+            self.spaceship.draw(self.screen, self.camera.pos)
             
+            
+
             if self.enemy_base and self.enemy_base.alive:
                 self.enemy_base.update()
-                self.enemy_base.draw(self.screen, self.camera_pos)
+                self.enemy_base.draw(self.screen, self.camera.pos)
                 now = pygame.time.get_ticks()
-                if now - self.last_enemy_spawn > 6000:  # 5 saniyede bir
+                if now - self.last_enemy_spawn > 4000:  # 4 saniyede bir
                     self.spawn_enemy()
                     self.last_enemy_spawn = now
             else:
-                self.enemy_base = None
+                self.enemy_base = None """
 
-            # Dünya için can barı
-            pygame.draw.rect(self.screen, (100, 100, 100), (self.bar_x, self.bar_y, self.bar_width, self.bar_height))  # Arka plan
-            pygame.draw.rect(self.screen, (0, 200, 0), (self.bar_x, self.bar_y, int(self.bar_width * self.earth_bar / 100), self.bar_height))  # Doluluk
+            # Düşman yöneticisini güncelle ve çiz
+            self.camera.update(self.spaceship.position, self.spaceship.size)
+            self.spaceship.update(pygame.key.get_pressed())
+            self.spaceship.draw(self.screen, self.camera.pos)
+            self.enemy_manager.update(self.spaceship)
+            self.earth_bar = self.enemy_manager.earth_bar
+            self.enemy_manager.draw(self.screen)
+            
+
+            draw_earth_bar(self.screen, self.earth_bar)
 
             pygame.display.flip() #ekran güncelle
             

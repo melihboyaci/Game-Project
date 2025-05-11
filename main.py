@@ -1,7 +1,7 @@
 import pygame
 
 from utils.views import start_screen
-from game_loop import game_loop
+from src.game_loop import game_loop
 
 
 screen = pygame.display.set_mode((1280, 720))
