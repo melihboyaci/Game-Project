@@ -1,4 +1,5 @@
 import pygame
+from settings import PLAYER_FIRE_COOLDOWN, PLAYER_HEALTH
 
 class Player(pygame.sprite.Sprite):
     def __init__(self, x, y, speed, bullets):
@@ -7,10 +8,11 @@ class Player(pygame.sprite.Sprite):
         # Run sprite sheet
         self.spritesheet_run = pygame.image.load("assets/Rifle_Stage_Assets/sprites/soldier/rifle/run.png").convert_alpha()
         # Fire sprite sheet
-        self.spritesheet_fire = pygame.image.load("assets/Rifle_Stage_Assets/sprites/soldier/rifle/fire.png").convert_alpha()
+        self.spritesheet_fire = pygame.image.load("assets/Rifle_Stage_Assets/sprites/soldier/rifle/fire(no_fx_new).png").convert_alpha()
         # Reload sprite sheet
         self.spritesheet_reload = pygame.image.load("assets/Rifle_Stage_Assets/sprites/soldier/rifle/reload.png").convert_alpha()
-
+        # Damaged sprite sheet
+        self.spritesheet_damaged = pygame.image.load("assets/Rifle_Stage_Assets/sprites/soldier/rifle/damaged.png").convert_alpha()
 
         self.frame_width = 102  # Her bir karenin genişliği
         self.frame_height = 36  # Her bir karenin yüksekliği
@@ -18,6 +20,7 @@ class Player(pygame.sprite.Sprite):
         self.num_frames_run = self.spritesheet_run.get_width() // self.frame_width
         self.num_frames_fire = self.spritesheet_fire.get_width() // self.frame_width
         self.num_frames_reload = self.spritesheet_reload.get_width() // self.frame_width
+        self.num_frames_damaged = self.spritesheet_damaged.get_width() // self.frame_width
         self.bullets = bullets
 
         # Run animasyon kareleri
@@ -47,6 +50,15 @@ class Player(pygame.sprite.Sprite):
         ]        
         self.frames_reload_left = [pygame.transform.flip(frame, True, False) for frame in self.frames_reload_right]
 
+        # Damaged animasyon kareleri
+        self.frames_damaged_right = [
+            pygame.transform.scale(
+                self.spritesheet_damaged.subsurface(pygame.Rect(i * self.frame_width, 0, self.frame_width, self.frame_height)),
+                (self.frame_width * 2, self.frame_height * 2)
+            ) for i in range(self.num_frames_damaged)
+        ]
+        self.frames_damaged_left = [pygame.transform.flip(frame, True, False) for frame in self.frames_damaged_right]
+
         self.current_frame = 0
         self.animation_speed = 0.15
         self.frame_timer = 0
@@ -61,10 +73,52 @@ class Player(pygame.sprite.Sprite):
         self.firing = False
         self.fire_frame = 0
         self.fire_timer = 0
+        self.has_dealt_damage = False
 
         self.reloading = False
         self.reload_frame = 0
         self.reload_timer = 0
+
+        # Hasar animasyonu için değişkenler
+        self.damaged = False
+        self.damaged_frame = 0
+        self.damaged_timer = 0
+        self.damaged_duration = 500  # Hasar animasyonunun süresi (ms)
+        self.last_damage_time = 0
+
+        # Fire cooldown
+        self.fire_cooldown = PLAYER_FIRE_COOLDOWN
+        self.last_fire_time = 0
+
+        # Karakterin gerçek boyutu
+        self.karakter_genislik = 18
+        self.karakter_yukseklik = 36
+        self.karakter_offset_x = 20
+        self.karakter_offset_y = 20
+
+        self.collision_rect = pygame.Rect(
+            self.rect.left + self.karakter_offset_x,
+            self.rect.top + self.karakter_offset_y,
+            self.karakter_genislik,
+            self.karakter_yukseklik
+        )
+
+        from objects import Bullet
+        self.bullet_sprites = pygame.sprite.Group()
+
+        self.health = PLAYER_HEALTH
+
+    def take_damage(self, damage):
+        """Oyuncu hasar aldığında çağrılır"""
+        current_time = pygame.time.get_ticks()
+        if current_time - self.last_damage_time > self.damaged_duration:
+            self.health = max(0, self.health - damage)
+            self.damaged = True
+            self.damaged_frame = 0
+            self.damaged_timer = 0
+            self.last_damage_time = current_time
+            return True
+        return False
 
     def update(self, keys, screen_width, screen_height):
         self.moving = False
@@ -77,7 +131,7 @@ class Player(pygame.sprite.Sprite):
             self.facing_right = False
             moved = True
         if keys[pygame.K_RIGHT]:
-            if self.rect.right < screen_width + 135:
+            if self.rect.right < screen_width + 140:  # Yeni sprite genişliğine göre ayarlandı
                 self.rect.x += self.speed
             self.facing_right = True
             moved = True
@@ -92,15 +146,48 @@ class Player(pygame.sprite.Sprite):
 
         self.moving = moved
 
-        # Fire animasyonu başlat (mermi varsa)
-        if keys[pygame.K_SPACE] and not self.firing:
+        # Hareket sonrası çarpışma kutusunu offset ile güncelle
+        self.collision_rect.topleft = (
+            self.rect.left + self.karakter_offset_x,
+            self.rect.top + self.karakter_offset_y
+        )
+
+        # Fire animasyonu başlat (mermi varsa ve cooldown geçtiyse)
+        current_time = pygame.time.get_ticks()
+        if keys[pygame.K_SPACE] and not self.firing and (current_time - self.last_fire_time > self.fire_cooldown):
             self.firing = True
             self.fire_frame = 0
             self.fire_timer = 0
+            self.has_dealt_damage = False
             self.bullets -= 1  # Mermiyi azalt
+            self.last_fire_time = current_time
             if self.bullets < 0:
                 self.firing = False
                 self.bullets = 0
+            else:
+                from objects import Bullet
+                if self.facing_right:
+                    start_pos = (self.rect.left + 52, self.rect.top + 36)
+                    # Mermi izinin bittiği noktayı bulmak için:
+                    step = 1
+                else:
+                    start_pos = (self.rect.left -20, self.rect.top + 36)
+                    step = -1
+                max_length = 146
+                end_pos = (start_pos[0] + step * max_length, start_pos[1])
+                # Bloklara çarpana kadar olan noktayı bul
+                if hasattr(self, 'blocks_for_bullet') and self.blocks_for_bullet is not None:
+                    for i in range(max_length):
+                        test_x = int(start_pos[0] + step * i)
+                        test_y = int(start_pos[1])
+                        for block in self.blocks_for_bullet:
+                            if block.rect.collidepoint(test_x, test_y):
+                                end_pos = (test_x, test_y)
+                                break
+                        else:
+                            continue
+                        break
+                self.bullet_sprites.add(Bullet(start_pos, end_pos))
 
         # Animasyon güncelle
         if self.firing:
@@ -156,14 +243,31 @@ class Player(pygame.sprite.Sprite):
                 self.image = self.frames_reload_left[min(self.reload_frame, self.num_frames_reload-1)]
             return  # Reload sırasında başka animasyon oynama
 
-    def draw(self, surface):
+        # Hasar animasyonu kontrolü
+        if self.damaged:
+            self.damaged_timer += self.animation_speed * 2
+            if self.damaged_timer >= 1:
+                self.damaged_frame += 1
+                self.damaged_timer = 0
+            if self.damaged_frame >= self.num_frames_damaged:
+                self.damaged = False
+                self.damaged_frame = 0
+            # Hasar animasyon karesi seç
+            if self.facing_right:
+                self.image = self.frames_damaged_right[min(self.damaged_frame, self.num_frames_damaged-1)]
+            else:
+                self.image = self.frames_damaged_left[min(self.damaged_frame, self.num_frames_damaged-1)]
+            return  # Hasar animasyonu sırasında diğer animasyonları oynatma
+
+        self.bullet_sprites.update()
+
+    def draw(self, surface, blocks=None):
         if not self.facing_right:
             surface.blit(self.image, (self.rect.x - 150, self.rect.y))
         else:
             surface.blit(self.image, self.rect.topleft)
 
-class Block1(pygame.sprite.Sprite):
-    def __init__(self, x, y):
-        super().__init__()
-        self.image = pygame.image.load("assets/Rifle_Stage_Assets/background_tileset/Block1.png").convert_alpha()
-        self.rect = self.image.get_rect(topleft=(x, y))
+        # Mermileri çiz
+        self.bullet_sprites.draw(surface)
+        # Mermilerin bloklara göre yolunu bulmak için blokları kaydet
+        self.blocks_for_bullet = blocks 
