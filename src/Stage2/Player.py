@@ -1,5 +1,6 @@
 import pygame
 import os
+import tile_assets
 
 # Player class
 class Player:
@@ -29,6 +30,8 @@ class Player:
         # Sağlık
         self.health = 100  # Maksimum sağlık
         self.max_health = 100
+
+        
 
         # Attack tuşları
         self.attack_keys = {
@@ -102,7 +105,8 @@ class Player:
             self.animations[state]["right"] = base_frames
             self.animations[state]["left"]  = [pygame.transform.flip(f, True, False) for f in base_frames]
 
-    def handle_input(self):
+    def handle_input(self,solid_rects):
+        TILE_SIZE = 32
         # eğer hurt durumundaysa ve 300 ms dolmadıysa
         if self.state == "hurt" and pygame.time.get_ticks() - self.hurt_timer < 300:
             return     # hiçbir input işleme, animasyon da update() içinde kalacak
@@ -111,32 +115,36 @@ class Player:
         moving = False
         now = pygame.time.get_ticks()
         self.rect.center = (self.x, self.y)
-        # Ekrandan taşmaması için sınırları ayarla
-        if self.x < 0:
-            self.x = 0
-        elif self.x > 1280 - self.rect.width:
-            self.x = 1280 - self.rect.width
-        if self.y < 0:
-            self.y = 0
-        elif self.y > 720 - self.rect.height:
-            self.y = 720 - self.rect.height
-        self.rect.center = (self.x, self.y)
-
+       
         # Hareket inputları
+        dx, dy = 0, 0
         if keys[pygame.K_w]:
-            self.y -= self.speed
-            moving = True
+            dy = -1
         if keys[pygame.K_s]:
-            self.y += self.speed
-            moving = True
+            dy = 1
         if keys[pygame.K_a]:
-            self.x -= self.speed
+            dx = -1
             self.direction = "left"
-            moving = True
         if keys[pygame.K_d]:
-            self.x += self.speed
+            dx = 1
             self.direction = "right"
+
+
+         # Hareket etmek istediğin pozisyonun hitbox'unu hesapla
+        next_hitbox = self.get_hitbox_rect().move(dx * self.speed, dy * self.speed)
+
+        # Çarpışma kontrolü
+        can_move = True
+        for rect in solid_rects:
+            if next_hitbox.colliderect(rect):
+                can_move = False
+                break
+
+        if can_move and (dx != 0 or dy != 0):
+            self.x += dx * self.speed
+            self.y += dy * self.speed
             moving = True
+            # Eğer yürünemezse hareket etme
 
         # Attack inputları
         for attack_name, key in self.attack_keys.items():
@@ -254,10 +262,10 @@ class Player:
         exit()
 
 
-    def get_collision_rect(self):
-        """Daha küçük bir çarpışma alanı döndürür."""
-        collision_rect = self.rect.inflate(-self.rect.width * 0.7, -self.rect.height * 0.7)  # %40 küçült
-        return collision_rect
+    # def get_collision_rect(self):
+    #     """Daha küçük bir çarpışma alanı döndürür."""
+    #     collision_rect = self.rect.inflate(-self.rect.width * 0.7, -self.rect.height * 0.7)  # %40 küçült
+    #     return collision_rect
 
     #çarpışma kontrolü için
     def get_collision_rect(self):
@@ -324,3 +332,31 @@ class Player:
         self.rect.center = (self.x, self.y)
         # Animasyonu güncelle
         self.update_animation()
+
+
+    def is_area_walkable(self,x, y, size=(1, 1)):
+        """Verilen sol üst köşe ve boyut için tüm alanın yürünebilir olup olmadığını kontrol eder."""
+        for dy in range(size[1]):
+            for dx in range(size[0]):
+                tx = x + dx
+                ty = y + dy
+                if tx < 0 or ty < 0 or tx >= tile_assets.map_data.shape[1] or ty >= tile_assets.map_data.shape[0]:
+                    return False
+                tile_walkable = tile_assets.tile_dict[tile_assets.map_data[ty][tx]]["walkable"]
+                object_index = tile_assets.object_data[ty][tx]
+                object_walkable = tile_assets.object_dict[object_index]["walkable"]
+                if not (tile_walkable and object_walkable):
+                    return False
+        return True    
+    
+    def get_hitbox_rect(self):
+        # Karakterin merkezinden 18 piksel uzaklıkta 36x36'lık bir kare
+        hitbox_size = 15 #orijinal 36 
+        center_x = self.x + self.rect.width // 2
+        center_y = self.y + self.rect.height // 2
+        return pygame.Rect(
+            center_x - hitbox_size // 2,
+            center_y - hitbox_size // 2,
+            hitbox_size,
+            hitbox_size
+    )

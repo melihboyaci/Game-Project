@@ -1,7 +1,6 @@
 import pygame
 import numpy as np
-import Player as Player
-import Enemy as Enemy
+
 import random
 
 
@@ -9,221 +8,24 @@ pygame.init()
 
 TILE_SIZE = 32
 
-screen = pygame.display.set_mode((TILE_SIZE * 40, TILE_SIZE * 22))
+import tile_assets 
+import Player as Player
+import Enemy as Enemy 
+
+
 pygame.display.set_caption("Tile Map Test")
 
-tileset = pygame.image.load("assets/Middle_Age_Assets/Forest_TileSet/forest_tiles.png").convert_alpha()
-
-# Tile'ları kes
-grassGround    = tileset.subsurface((0, 0, TILE_SIZE, TILE_SIZE))
-flavourGrass   = tileset.subsurface((TILE_SIZE, 0, TILE_SIZE, TILE_SIZE))
-flavourGrass2  = tileset.subsurface((TILE_SIZE * 2, 0, TILE_SIZE, TILE_SIZE))
-flavourGrass3  = tileset.subsurface((TILE_SIZE * 3, 0, TILE_SIZE, TILE_SIZE))
-flavourGrass4  = tileset.subsurface((TILE_SIZE * 4, 0, TILE_SIZE, TILE_SIZE))
-
-littleObject  = tileset.subsurface((0, TILE_SIZE*3, TILE_SIZE, TILE_SIZE))
-littleObject2  = tileset.subsurface((TILE_SIZE, TILE_SIZE*3, TILE_SIZE, TILE_SIZE))
-littleObject3  = tileset.subsurface((TILE_SIZE*2, TILE_SIZE*3, TILE_SIZE, TILE_SIZE))
-littleObject4  = tileset.subsurface((TILE_SIZE*3, TILE_SIZE*3, TILE_SIZE, TILE_SIZE))
-littleObject5  = tileset.subsurface((TILE_SIZE*4, TILE_SIZE*3, TILE_SIZE, TILE_SIZE))
-littleObject6  = tileset.subsurface((TILE_SIZE*5, TILE_SIZE*3, TILE_SIZE, TILE_SIZE))
-littleObject7  = tileset.subsurface((TILE_SIZE*6, TILE_SIZE*3, TILE_SIZE, TILE_SIZE))
-bigObject  = tileset.subsurface((TILE_SIZE*7, TILE_SIZE*3, TILE_SIZE*2, TILE_SIZE))
-bigObject2  = tileset.subsurface((TILE_SIZE*9, TILE_SIZE*3, TILE_SIZE*2, TILE_SIZE))
-
-giantHole  = tileset.subsurface((TILE_SIZE * 6, 0, TILE_SIZE*3, TILE_SIZE*3))
-littleHole  = tileset.subsurface((TILE_SIZE * 5, 0, TILE_SIZE, TILE_SIZE))
-
-campFire1  = tileset.subsurface((0, TILE_SIZE*5, TILE_SIZE, TILE_SIZE))
-campFire2  = tileset.subsurface((TILE_SIZE, TILE_SIZE*5, TILE_SIZE, TILE_SIZE))
-campFire3  = tileset.subsurface((TILE_SIZE*2, TILE_SIZE*5, TILE_SIZE, TILE_SIZE))
-campFire4  = tileset.subsurface((TILE_SIZE*3, TILE_SIZE*5, TILE_SIZE, TILE_SIZE))
-campFire5  = tileset.subsurface((TILE_SIZE*4, TILE_SIZE*5, TILE_SIZE, TILE_SIZE))
-
-tree1  = tileset.subsurface((0, TILE_SIZE*6, TILE_SIZE*2, TILE_SIZE*2))
-tree1_Forest  = tileset.subsurface((TILE_SIZE*2, TILE_SIZE*6, TILE_SIZE*2, TILE_SIZE*2))
-tree2  = tileset.subsurface((0, TILE_SIZE*8, TILE_SIZE*2, TILE_SIZE*2))
-tree2_Forest  = tileset.subsurface((0, TILE_SIZE*10, TILE_SIZE*2, TILE_SIZE*2))
-
-pool1= tileset.subsurface((TILE_SIZE*4, TILE_SIZE*7, TILE_SIZE, TILE_SIZE))
-pool2= tileset.subsurface((TILE_SIZE*5, TILE_SIZE*7, TILE_SIZE, TILE_SIZE))
-pool3= tileset.subsurface((TILE_SIZE*6, TILE_SIZE*7, TILE_SIZE, TILE_SIZE))
-pool4= tileset.subsurface((TILE_SIZE*4, TILE_SIZE*8, TILE_SIZE, TILE_SIZE))
-pool5WithWave= tileset.subsurface((TILE_SIZE*5, TILE_SIZE*8, TILE_SIZE, TILE_SIZE))
-pool6= tileset.subsurface((TILE_SIZE*6, TILE_SIZE*8, TILE_SIZE, TILE_SIZE))
-pool7= tileset.subsurface((TILE_SIZE*4, TILE_SIZE*9, TILE_SIZE, TILE_SIZE))
-pool8= tileset.subsurface((TILE_SIZE*5, TILE_SIZE*9, TILE_SIZE, TILE_SIZE))
-pool9= tileset.subsurface((TILE_SIZE*6, TILE_SIZE*9, TILE_SIZE, TILE_SIZE))
-
-pool5WithLessWave= tileset.subsurface((TILE_SIZE*8, TILE_SIZE*8, TILE_SIZE, TILE_SIZE))
-
-tiles = [grassGround, flavourGrass, flavourGrass2, flavourGrass3, flavourGrass4]
-
-
-#????
-tile_dict = {
-    0: {"image": grassGround, "walkable": True},
-    1: {"image": flavourGrass, "walkable": True},
-    2: {"image": flavourGrass2, "walkable": True},
-    3: {"image": flavourGrass3, "walkable": True},
-    4: {"image": flavourGrass4, "walkable": True}
-}
-
-object_dict = {
-    0: {"image": None, "walkable": True, "size": (1, 1)},  # boş obje
-    1: {"image": littleObject, "walkable": False, "size": (1, 1)},
-    2: {"image": littleObject2, "walkable": False, "size": (1, 1)},
-    3: {"image": bigObject, "walkable": False, "size": (2, 1)},
-    4: {"image": tree1, "walkable": False, "size": (2, 2)},
-    5: {"image": tree1_Forest, "walkable": False, "size": (2, 2)},
-    6: {"image": giantHole, "walkable": False, "size": (3, 3)},
-    7: {"image": littleHole, "walkable": False, "size": (1, 1)},
-    8: {"image": campFire1, "walkable": False, "size": (1, 1)},
-    9: {"image": campFire2, "walkable": False, "size": (1, 1)},
-    10: {"image": campFire3, "walkable": False, "size": (1, 1)},
-    11: {"image": campFire4, "walkable": False, "size": (1, 1)},
-    12: {"image": campFire5, "walkable": False, "size": (1, 1)},
-    13: {"image": tree2, "walkable": False, "size": (2, 2)},
-    14: {"image": tree2_Forest, "walkable": False, "size": (2, 2)},
-    15: {"image": pool1, "walkable": False, "size": (1, 1)},
-    16: {"image": pool2, "walkable": False, "size": (1, 1)},
-    17: {"image": pool3, "walkable": False, "size": (1, 1)},
-    18: {"image": pool4, "walkable": False, "size": (1, 1)},
-    19: {"image": pool5WithWave, "walkable": False, "size": (1, 1)},
-    20: {"image": pool6, "walkable": False, "size": (1, 1)},
-    21: {"image": pool7, "walkable": False, "size": (1, 1)},
-    22: {"image": pool8, "walkable": False, "size": (1, 1)},
-    23: {"image": pool9, "walkable": False, "size": (1, 1)},
-    24: {"image": pool5WithLessWave, "walkable": False, "size": (1, 1)},
-
-}
 
 
 
-
-
-
-# Map datası
-map_data = np.zeros((22, 40), dtype=int)
-
-#Objeler için
-object_data = np.zeros((22, 40), dtype=int)     # üstündeki objeler
-
-
-# Zemin
-map_data[:] = 0
-
-# Birkaç zemin çeşidi
-map_data[5, 5] = 1
-map_data[5, 6] = 2
-map_data[5, 7] = 3
-map_data[5, 8] = 4
-
-# Objeler
-object_data[8, 5] = 1
-object_data[8, 6] = 2
-object_data[9, 7] = 3
-object_data[10, 8] = 4
-object_data[13, 9] = 6
-
-object_data[16, 10] = 7
-object_data[19, 11] = 8
-
-#Create Forest
-# Sağ tarafa ikişer tane indeksi 5 olan öğe ekle
-for y in range(0, 22, 2):  # 2 satırda bir öğe ekle
-    for x in range(35, 40, 2):  # Sağ tarafta 38 ve 39. sütunlara ekle
-        object_data[y, x] = 5  # İndeksi 5 olan öğe
-
-    for x in range(34, 35, 2):  
-        object_data[y, x] = 4
-
-    # for x in range(0, 4, 2):
-    #     object_data[y, x] = 14
-
-    # for x in range(3, 5, 2):
-    #     object_data[y, x] = 13
-
-#Create Water
-object_data[4, 25] = 15
-
-for x in range(26, 31, 1):
-    object_data[4, x] = 16
-
-for y in range(5, 10, 1):  
-    object_data[y, 25] = 18
-
-object_data[10, 25] = 21
-
-for x in range(26, 31, 1):
-    object_data[10, x] = 22
-
-object_data[10, 31] = 23
-
-for y in range(5, 10, 1):  
-    object_data[y, 31] = 20
-
-object_data[4, 31] = 17    
-
-# for y in range(4, 10, 1):  
-#     for x in range(25, 31, 1):  
-
-
-for y in range(5, 10, 1):
-    for x in range(26, 31, 1):
-        object_data[y, x] = random.choice([19, 24])
-
-        
-# def draw_map():
-#     for y in range(len(map_data2)):
-#         for x in range(len(map_data2[y])):
-#             tile_index = map_data2[y][x]
-#             screen.blit(tiles[tile_index], (x * TILE_SIZE, y * TILE_SIZE))
-
-
-def draw_map():
-    for y in range(map_data.shape[0]):
-        for x in range(map_data.shape[1]):
-            tile_index = map_data[y][x]
-            tile_image = tile_dict[tile_index]["image"]
-            if tile_image:
-                screen.blit(tile_image, (x * TILE_SIZE, y * TILE_SIZE))
-
-    # Objeleri ayrı döngüyle çiz
-    for y in range(object_data.shape[0]):
-        for x in range(object_data.shape[1]):
-            object_index = object_data[y][x]
-
-            # Eğer obje boşsa veya bu hücre objenin devamıysa atla
-            if object_index == 0:
-                continue
-
-            # Sadece objenin sol üst köşesini çiz
-            obj_size = object_dict[object_index]["size"]
-            is_top_left = True
-
-            for j in range(obj_size[1]):
-                for i in range(obj_size[0]):
-                    if (0 <= y - j < object_data.shape[0] and 0 <= x - i < object_data.shape[1] 
-                        and object_data[y - j][x - i] == object_index):
-                        if i != 0 or j != 0:
-                            is_top_left = False
-            if not is_top_left:
-                continue
-
-            object_image = object_dict[object_index]["image"]
-            if object_image:
-                screen.blit(object_image, (x * TILE_SIZE, y * TILE_SIZE))
-
-
-#yürünebilirlik kontrolü
-# (x, y) koordinatındaki tile ve object'in yürünebilirliğini kontrol eder
-def is_walkable(x, y):
-    if x < 0 or y < 0 or x >= map_data.shape[1] or y >= map_data.shape[0]:
-        return False
-    tile_walkable = tile_dict[map_data[y][x]]["walkable"]
-    object_walkable = object_dict[object_data[y][x]]["walkable"]
-    return tile_walkable and object_walkable
+# #yürünebilirlik kontrolü
+# # (x, y) koordinatındaki tile ve object'in yürünebilirliğini kontrol eder
+# def is_walkable(x, y):
+#     if x < 0 or y < 0 or x >= map_data.shape[1] or y >= map_data.shape[0]:
+#         return False
+#     tile_walkable = tile_assets.tile_dict[map_data[y][x]]["walkable"]
+#     object_walkable = tile_assets.object_dict[object_data[y][x]]["walkable"]
+#     return tile_walkable and object_walkable
 
 
 
@@ -232,6 +34,9 @@ clock = pygame.time.Clock()
 running = True
 enemies = [Enemy.Enemy(300, 100), Enemy.Enemy(500, 200), Enemy.Enemy(1000, 1000)]  # Enemy nesneleri listesi
 
+
+solid_rects = tile_assets.create_solid_rects()  # Yürünemez alanları oluştur
+
 while running:
     dt = clock.tick(60)
 
@@ -239,7 +44,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    player.handle_input()
+    player.handle_input(solid_rects)
 
     player.attack(enemies)
     player.update()
@@ -258,12 +63,12 @@ while running:
             enemy.update(player)
             enemy.update_animation()
     
-    screen.fill((0, 0, 0))
-    draw_map()
-    player.draw(screen)
+    tile_assets.screen.fill((0, 0, 0))
+    tile_assets.draw_map()
+    player.draw(tile_assets.screen)
     
     for enemy in enemies:
-        enemy.draw(screen)
+        enemy.draw(tile_assets.screen)
 
     pygame.display.update()
    

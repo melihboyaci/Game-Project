@@ -1,4 +1,8 @@
 import pygame
+import tile_assets 
+
+TILE_SIZE = 32
+
 
 class Enemy:
     def __init__(self, x, y):
@@ -217,3 +221,18 @@ class Enemy:
 
     def draw(self, surface):
         surface.blit(self.image, (self.x, self.y))
+
+    def is_area_walkable(self,x, y, size=(1, 1)):
+        """Verilen sol üst köşe ve boyut için tüm alanın yürünebilir olup olmadığını kontrol eder."""
+        for dy in range(size[1]):
+            for dx in range(size[0]):
+                tx = x + dx
+                ty = y + dy
+                if tx < 0 or ty < 0 or tx >= tile_assets.map_data.shape[1] or ty >= tile_assets.map_data.shape[0]:
+                    return False
+                tile_walkable = tile_assets.tile_dict[tile_assets.map_data[ty][tx]]["walkable"]
+                object_index = tile_assets.object_data[ty][tx]
+                object_walkable = tile_assets.object_dict[object_index]["walkable"]
+                if not (tile_walkable and object_walkable):
+                    return False
+        return True    
