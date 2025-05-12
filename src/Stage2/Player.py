@@ -105,18 +105,16 @@ class Player:
             self.animations[state]["right"] = base_frames
             self.animations[state]["left"]  = [pygame.transform.flip(f, True, False) for f in base_frames]
 
-    def handle_input(self,solid_rects):
+    def handle_input(self, solid_rects, all_characters):
         TILE_SIZE = 32
-        # eğer hurt durumundaysa ve 300 ms dolmadıysa
         if self.state == "hurt" and pygame.time.get_ticks() - self.hurt_timer < 300:
-            return     # hiçbir input işleme, animasyon da update() içinde kalacak
+            return
 
         keys = pygame.key.get_pressed()
         moving = False
         now = pygame.time.get_ticks()
         self.rect.center = (self.x, self.y)
-       
-        # Hareket inputları
+
         dx, dy = 0, 0
         if keys[pygame.K_w]:
             dy = -1
@@ -129,24 +127,45 @@ class Player:
             dx = 1
             self.direction = "right"
 
+        # --- X ekseni için ayrı kontrol ---
+        if dx != 0:
+            next_hitbox_x = self.get_hitbox_rect().move(dx * self.speed, 0)
+            can_move_x = True
+            for rect in solid_rects:
+                if next_hitbox_x.colliderect(rect):
+                    can_move_x = False
+                    break
+            if can_move_x:
+                for other in all_characters:
+                    if other is self:
+                        continue
+                    if next_hitbox_x.colliderect(other.get_hitbox_rect()):
+                        can_move_x = False
+                        break
+            if can_move_x:
+                self.x += dx * self.speed
+                moving = True
 
-         # Hareket etmek istediğin pozisyonun hitbox'unu hesapla
-        next_hitbox = self.get_hitbox_rect().move(dx * self.speed, dy * self.speed)
+        # --- Y ekseni için ayrı kontrol ---
+        if dy != 0:
+            next_hitbox_y = self.get_hitbox_rect().move(0, dy * self.speed)
+            can_move_y = True
+            for rect in solid_rects:
+                if next_hitbox_y.colliderect(rect):
+                    can_move_y = False
+                    break
+            if can_move_y:
+                for other in all_characters:
+                    if other is self:
+                        continue
+                    if next_hitbox_y.colliderect(other.get_hitbox_rect()):
+                        can_move_y = False
+                        break
+            if can_move_y:
+                self.y += dy * self.speed
+                moving = True
 
-        # Çarpışma kontrolü
-        can_move = True
-        for rect in solid_rects:
-            if next_hitbox.colliderect(rect):
-                can_move = False
-                break
-
-        if can_move and (dx != 0 or dy != 0):
-            self.x += dx * self.speed
-            self.y += dy * self.speed
-            moving = True
-            # Eğer yürünemezse hareket etme
-
-        # Attack inputları
+        # Attack inputları ve state güncellemesi aynı kalabilir
         for attack_name, key in self.attack_keys.items():
             if keys[key] and now - self.last_attack_time[attack_name] > self.attack_cooldowns[attack_name]:
                 self.state = attack_name
@@ -155,9 +174,8 @@ class Player:
                 self.last_attack_time[attack_name] = now
                 self.attack_message = f"{attack_name.upper()} kullanıldı!"
                 print(f"{attack_name} kullanıldı! Hasar: {self.attack_damage[attack_name]}")
-                return  # aynı anda başka hareket yapmasın
+                return
 
-        # Eğer saldırıda değilse, yürüme veya idle state'e geç
         if self.state.startswith("attack"):
             return
 
@@ -359,4 +377,4 @@ class Player:
             center_y - hitbox_size // 2,
             hitbox_size,
             hitbox_size
-    )
+        )

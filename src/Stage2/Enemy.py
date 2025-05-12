@@ -125,25 +125,24 @@ class Enemy:
 
             self.last_attack_time = now
 
-    def update(self, player):
+    def update(self, player, solid_rects, all_characters):
         # Eğer 'death' durumundaysa, animasyonu tamamla ve oyundan kaldır
         if self.state == "death":
             if self.frame_index >= len(self.animations["death"][self.direction]) - 1:
-                # Ölüm animasyonu tamamlandıktan sonra kaldır
                 print("Enemy öldü ve oyundan kaldırılıyor.")
                 self.die()
                 return
             else:
-                self.update_animation()  # Ölüm animasyonu devam ediyor
+                self.update_animation()
                 return
 
         # Eğer 'hurt' durumundaysa, başka bir duruma geçme
         if self.state == "hurt":
-            if pygame.time.get_ticks() - self.hurt_timer < 500:  # 500 ms boyunca 'hurt' durumunda kal
+            if pygame.time.get_ticks() - self.hurt_timer < 500:
                 self.update_animation()
                 return
             else:
-                self.state = "idle"  # 'hurt' süresi dolduğunda 'idle' durumuna geç
+                self.state = "idle"
 
         # Player ile aradaki mesafe
         dx = player.x - self.x
@@ -153,15 +152,63 @@ class Enemy:
         # Yön belirle
         self.direction = "right" if dx > 0 else "left"
 
-        if distance <= self.get_collision_rect().colliderect(player.get_collision_rect()):
-            # menzile girdiyse saldır
+        # Saldırı menzili kontrolü
+        if self.get_collision_rect().colliderect(player.get_collision_rect()):
             self.attack(player)
         else:
-            # menzil dışındaysa yürüsün
-            self.state = "walk"
-            norm = max(1, distance)
-            self.x += self.speed * dx / norm
-            self.y += self.speed * dy / norm
+            # Eğer çok yakınsa hareket etmesin
+            if distance > 5:
+                # --- X ekseni için ayrı kontrol ---
+                norm = max(1, distance)
+                step_x = self.speed * dx / norm
+                step_y = self.speed * dy / norm
+
+                # Çok küçük adımları sıfırla
+                if abs(step_x) < 1: step_x = 0
+                if abs(step_y) < 1: step_y = 0
+
+                # X ekseni hareketi
+                if step_x != 0:
+                    next_hitbox_x = self.get_hitbox_rect().move(step_x, 0)
+                    can_move_x = True
+                    for rect in solid_rects:
+                        if next_hitbox_x.colliderect(rect):
+                            can_move_x = False
+                            break
+                    if can_move_x:
+                        for other in all_characters:
+                            if other is self:
+                                continue
+                            if next_hitbox_x.colliderect(other.get_hitbox_rect()):
+                                can_move_x = False
+                                break
+                    if can_move_x:
+                        self.x += step_x
+
+                # Y ekseni hareketi
+                if step_y != 0:
+                    next_hitbox_y = self.get_hitbox_rect().move(0, step_y)
+                    can_move_y = True
+                    for rect in solid_rects:
+                        if next_hitbox_y.colliderect(rect):
+                            can_move_y = False
+                            break
+                    if can_move_y:
+                        for other in all_characters:
+                            if other is self:
+                                continue
+                            if next_hitbox_y.colliderect(other.get_hitbox_rect()):
+                                can_move_y = False
+                                break
+                    if can_move_y:
+                        self.y += step_y
+
+                if (step_x != 0 and can_move_x) or (step_y != 0 and can_move_y):
+                    self.state = "walk"
+                else:
+                    self.state = "idle"
+            else:
+                self.state = "idle"
 
         self.rect.center = (self.x, self.y)
         self.update_animation()
@@ -236,3 +283,15 @@ class Enemy:
                 if not (tile_walkable and object_walkable):
                     return False
         return True    
+    
+    def get_hitbox_rect(self):
+        # Karakterin merkezinden 18 piksel uzaklıkta 36x36'lık bir kare
+        hitbox_size = 15 #orijinal 36 
+        center_x = self.x + self.rect.width // 2
+        center_y = self.y + self.rect.height // 2
+        return pygame.Rect(
+            center_x - hitbox_size // 2,
+            center_y - hitbox_size // 2,
+            hitbox_size,
+            hitbox_size
+        )

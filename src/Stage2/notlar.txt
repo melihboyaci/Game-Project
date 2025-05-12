@@ -131,3 +131,94 @@ Bu yapıyı entegre edip dener misin? Başka bir sorun kalırsa yine çözeriz!
             self.state = "walk"
         else:
             self.state = "idle"
+
+
+
+
+
+
+
+//Uyarı: Enemy class için hareket takılması sorunu var bu kodda
+
+def update(self, player, solid_rects, all_characters):
+        # Eğer 'death' durumundaysa, animasyonu tamamla ve oyundan kaldır
+        if self.state == "death":
+            if self.frame_index >= len(self.animations["death"][self.direction]) - 1:
+                print("Enemy öldü ve oyundan kaldırılıyor.")
+                self.die()
+                return
+            else:
+                self.update_animation()
+                return
+
+        # Eğer 'hurt' durumundaysa, başka bir duruma geçme
+        if self.state == "hurt":
+            if pygame.time.get_ticks() - self.hurt_timer < 500:
+                self.update_animation()
+                return
+            else:
+                self.state = "idle"
+
+        # Player ile aradaki mesafe
+        dx = player.x - self.x
+        dy = player.y - self.y
+        distance = (dx * dx + dy * dy) ** 0.5
+
+        # Yön belirle
+        self.direction = "right" if dx > 0 else "left"
+
+        # Saldırı menzili kontrolü
+        if self.get_collision_rect().colliderect(player.get_collision_rect()):
+            self.attack(player)
+        else:
+            # menzil dışındaysa yürüsün
+            # --- X ekseni için ayrı kontrol ---
+            move_x = 0
+            if abs(dx) > 1:
+                norm = max(1, distance)
+                step_x = self.speed * dx / norm
+                next_hitbox_x = self.get_hitbox_rect().move(step_x, 0)
+                can_move_x = True
+                for rect in solid_rects:
+                    if next_hitbox_x.colliderect(rect):
+                        can_move_x = False
+                        break
+                if can_move_x:
+                    for other in all_characters:
+                        if other is self:
+                            continue
+                        if next_hitbox_x.colliderect(other.get_hitbox_rect()):
+                            can_move_x = False
+                            break
+                if can_move_x:
+                    self.x += step_x
+
+            # --- Y ekseni için ayrı kontrol ---
+            move_y = 0
+            if abs(dy) > 1:
+                norm = max(1, distance)
+                step_y = self.speed * dy / norm
+                next_hitbox_y = self.get_hitbox_rect().move(0, step_y)
+                can_move_y = True
+                for rect in solid_rects:
+                    if next_hitbox_y.colliderect(rect):
+                        can_move_y = False
+                        break
+                if can_move_y:
+                    for other in all_characters:
+                        if other is self:
+                            continue
+                        if next_hitbox_y.colliderect(other.get_hitbox_rect()):
+                            can_move_y = False
+                            break
+                if can_move_y:
+                    self.y += step_y
+
+            # Hareket ettiyse state'i güncelle
+            if (abs(dx) > 1 and can_move_x) or (abs(dy) > 1 and can_move_y):
+                self.state = "walk"
+            else:
+                self.state = "idle"
+
+        self.rect.center = (self.x, self.y)
+        self.update_animation()            

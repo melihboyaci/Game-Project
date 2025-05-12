@@ -68,8 +68,8 @@ tile_dict = {
 
 object_dict = {
     0: {"image": None, "walkable": True, "size": (1, 1)},  # boş obje
-    1: {"image": littleObject, "walkable": False, "size": (1, 1)},
-    2: {"image": littleObject2, "walkable": False, "size": (1, 1)},
+    1: {"image": littleObject, "walkable": True, "size": (1, 1)},
+    2: {"image": littleObject2, "walkable": True, "size": (1, 1)},
     3: {"image": bigObject, "walkable": False, "size": (2, 1)},
     4: {"image": tree1, "walkable": False, "size": (2, 2)},
     5: {"image": tree1_Forest, "walkable": False, "size": (2, 2)},
