@@ -1,4 +1,4 @@
-import pygame, random
+import pygame
 from utils.enemy_spaceship import EnemySpaceship
 from utils.enemybase import EnemyBase
 
@@ -7,6 +7,7 @@ class EnemyManager:
         self.camera = camera
         self.earth = earth
         self.earth_bar = earth_bar
+        
         
         base_path = "assets/Space_Stage_Assets/sprites/enemybase/base.png"
         base_size = (128, 128)
@@ -27,8 +28,28 @@ class EnemyManager:
         self.enemy_base = EnemyBase(base_path, base_size, base_pos)
 
         self.enemies = []
-        self.spawn_time = 4000
+        self.spawn_time = 1000
         self.last_spawn_time = pygame.time.get_ticks()
+        self.wave = 1
+        self.max_enemies = 10
+        self.enemy_types = [
+            {
+                "image_path": "assets/Space_Stage_Assets/sprites/spaceship/enemy_fighter/fighter_base.png",
+                "size": (64, 64),
+                "engine_path": "assets/Space_Stage_Assets/sprites/spaceship/enemy_fighter/fighter_engine.png",
+                "engine_size": (64, 64),
+                "scale": 1.7
+            },
+            {
+                "image_path": "assets/Space_Stage_Assets/sprites/spaceship/enemy_torpedo/torpedo_base.png",
+                "size": (64, 64),
+                "engine_path": "assets/Space_Stage_Assets/sprites/spaceship/enemy_torpedo/torpedo_engine.png",
+                "engine_size": (64, 64),
+                "scale": 2
+            }
+        ]
+
+        self.enemies_this_wave = 0
 
     def spawn_enemy(self):
         if not self.enemy_base.alive:
@@ -43,28 +64,35 @@ class EnemyManager:
             base_center[0] - size[0] // 2,
             base_center[1] - size[1] // 2
         )
+        enemy_type = self.enemy_types[(self.wave - 1) % len(self.enemy_types)]
 
         enemy = EnemySpaceship(
-            image_path="assets/Space_Stage_Assets/sprites/spaceship/2.png",
+            image_path=enemy_type["image_path"],
             size=size,
             position=spawn_pos,
-            speed=3.5,
+            speed=3.2,
             target=self.earth,
+            engine_path=enemy_type["engine_path"],
+            engine_size=enemy_type["engine_size"],
+            scale=enemy_type["scale"],
+            enemy_type="torpedo" if (self.wave - 1) % len(self.enemy_types) == 1 else "fighter"
         )
         self.enemies.append(enemy)
+        self.enemies_this_wave += 1
 
     def update(self, spaceship=None):
         if not self.enemy_base.alive:
             return
         self.enemy_base.update()
         now = pygame.time.get_ticks()
-        if now - self.last_spawn_time > self.spawn_time:
-            self.spawn_enemy()
-            self.last_spawn_time = now
+        if self.enemies_this_wave < self.max_enemies:
+            if now - self.last_spawn_time > self.spawn_time:
+                self.spawn_enemy()
+                self.last_spawn_time = now
 
         enemies_to_remove = []
         for enemy in self.enemies:
-            enemy.update()
+            enemy.update(spaceship)
             if enemy.get_rect().colliderect(self.earth.get_rect()):
                 enemies_to_remove.append(enemy)
                 self.earth_bar -= 10
@@ -75,13 +103,25 @@ class EnemyManager:
                             enemy.take_damage(1)
                             spaceship.bullets.remove(bullet)
                             break
+            #mermi oyuncu gemisi çarpışması
+            if spaceship:
+                for bullet in enemy.bullets:
+                    if bullet.get_rect().colliderect(spaceship.get_rect()):
+                        spaceship.take_damage(1)
+                        enemy.bullets.remove(bullet)
+                        break
 
-        self.enemies = [enemy for enemy in self.enemies if enemy.health >= 0]
+        self.enemies = [enemy for enemy in self.enemies if enemy.health >= 0 and enemy not in enemies_to_remove]
 
-        for enemy in enemies_to_remove:
+        """for enemy in enemies_to_remove:
             self.enemies.remove(enemy)
             if enemy in self.enemies:
-                self.enemies.remove(enemy)
+                self.enemies.remove(enemy)"""
+
+        if len(self.enemies) == 0 and self.enemies_this_wave == self.max_enemies:
+            self.wave += 1
+            self.enemies_this_wave = 0
+            self.last_spawn_time = now
 
     def draw(self, screen):
         if self.enemy_base.alive:

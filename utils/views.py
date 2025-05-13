@@ -156,3 +156,11 @@ def draw_earth_bar(screen, earth_bar):
 
     pygame.draw.rect(screen, (100, 100 ,100), (bar_x, bar_y, bar_width, bar_height))
     pygame.draw.rect(screen, (0, 200, 0), (bar_x, bar_y, bar_width * (earth_bar / 100), bar_height))
+
+def draw_health_bar(screen, health, max_health=15):
+    health = max(0, min(int(health), max_health))
+    bar_image = pygame.image.load(f"assets/Space_Stage_Assets/sprites/spaceship/health_bar/{health}.png").convert_alpha()
+    bar_image = pygame.transform.scale(bar_image, (204, 61))
+    bar_x = 20
+    bar_y = screen.get_height() - bar_image.get_height() - 20
+    screen.blit(bar_image, (bar_x, bar_y))

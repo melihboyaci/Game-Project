@@ -14,8 +14,7 @@ def main():
 
     game = game_loop(screen, clock) 
     
-    game.run()   
-
+    game.run()
     pygame.quit()
 
 
