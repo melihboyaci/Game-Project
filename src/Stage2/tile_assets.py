@@ -11,6 +11,12 @@ screen = pygame.display.set_mode((TILE_SIZE * 40, TILE_SIZE * 22))
 
 tileset = pygame.image.load("assets/Middle_Age_Assets/Forest_TileSet/forest_tiles.png").convert_alpha()
 
+pool_tileset = pygame.image.load("assets/Middle_Age_Assets/Forest_TileSet/poolWB2.png").convert_alpha()
+
+tileStufs = pygame.image.load("assets/Middle_Age_Assets/Forest_TileSet/tileStufs.png").convert_alpha()
+
+tree_assets=pygame.image.load("assets/Middle_Age_Assets/Forest_TileSet/tree_assets.png").convert_alpha()
+
 # Tile'ları kes
 grassGround    = tileset.subsurface((0, 0, TILE_SIZE, TILE_SIZE))
 flavourGrass   = tileset.subsurface((TILE_SIZE, 0, TILE_SIZE, TILE_SIZE))
@@ -57,6 +63,24 @@ pool5WithLessWave= tileset.subsurface((TILE_SIZE*8, TILE_SIZE*8, TILE_SIZE, TILE
 tiles = [grassGround, flavourGrass, flavourGrass2, flavourGrass3, flavourGrass4]
 
 
+
+poolWB1= pool_tileset.subsurface((TILE_SIZE*10,TILE_SIZE* 4, TILE_SIZE*12, TILE_SIZE*5))
+poolWB2= pool_tileset.subsurface((TILE_SIZE*17,TILE_SIZE* 9, TILE_SIZE*5, TILE_SIZE*2))
+
+tileStufs1= tileStufs.subsurface((0, 0, TILE_SIZE*3, TILE_SIZE*2))
+tileStufs2= tileStufs.subsurface((0, TILE_SIZE*2, TILE_SIZE*2, TILE_SIZE))
+tileStufs3= tileStufs.subsurface((0, TILE_SIZE*3, TILE_SIZE*1, TILE_SIZE*2))
+tileStufs4= tileStufs.subsurface((TILE_SIZE*1, TILE_SIZE*3, TILE_SIZE*1, TILE_SIZE*2))
+tileStufs5= tileStufs.subsurface((TILE_SIZE*0, TILE_SIZE*5, TILE_SIZE*2, TILE_SIZE*2))
+tileStufs6= tileStufs.subsurface((TILE_SIZE*0, TILE_SIZE*7, TILE_SIZE*2, TILE_SIZE*2))
+tileStufs7= tileStufs.subsurface((TILE_SIZE*0, TILE_SIZE*9, TILE_SIZE*2, TILE_SIZE*1))
+
+
+tree_down=tree_assets.subsurface((0,0,TILE_SIZE*2,TILE_SIZE*1))
+tree_up=tree_assets.subsurface((0,TILE_SIZE,TILE_SIZE*2,TILE_SIZE*1))
+tree_right=tree_assets.subsurface((0,TILE_SIZE*2,TILE_SIZE*1,TILE_SIZE*2))
+tree_left=tree_assets.subsurface((TILE_SIZE*1,TILE_SIZE*2,TILE_SIZE*1,TILE_SIZE*2))
+
 #????
 tile_dict = {
     0: {"image": grassGround, "walkable": True},
@@ -92,6 +116,19 @@ object_dict = {
     22: {"image": pool8, "walkable": False, "size": (1, 1)},
     23: {"image": pool9, "walkable": False, "size": (1, 1)},
     24: {"image": pool5WithLessWave, "walkable": False, "size": (1, 1)},
+    25: {"image": poolWB1, "walkable": False, "size": (12, 5)},
+    26: {"image": poolWB2, "walkable": False, "size": (5, 2)},
+    27: {"image": tileStufs1, "walkable": False, "size": (3, 2)},
+    28: {"image": tileStufs2, "walkable": False, "size": (2, 1)},
+    29: {"image": tileStufs3, "walkable": False, "size": (1, 2)},
+    30: {"image": tileStufs4, "walkable": False, "size": (1, 2)},
+    31: {"image": tileStufs5, "walkable": False, "size": (2, 2)},
+    32: {"image": tileStufs6, "walkable": False, "size": (2, 2)},
+    33: {"image": tileStufs7, "walkable": False, "size": (2, 1)},
+    34: {"image": tree_down, "walkable": False, "size": (2, 1)},
+    35: {"image": tree_up, "walkable": False, "size": (2, 1)},
+    36: {"image": tree_right, "walkable": False, "size": (1, 2)},
+    37: {"image": tree_left, "walkable": False, "size": (1, 2)},
 }
 
 # Map datası
@@ -105,20 +142,24 @@ object_data = np.zeros((22, 40), dtype=int)     # üstündeki objeler
 map_data[:] = 0
 
 # Birkaç zemin çeşidi
-map_data[5, 5] = 1
-map_data[5, 6] = 2
-map_data[5, 7] = 3
-map_data[5, 8] = 4
+for y in range(22):
+    for x in range(40):
+        if random.random() < 0.07:  # %5 ihtimalle farklı bir zemin türü
+            map_data[y, x] = random.randint(1, 4)  # 1 ile 4 arasında rastgele bir zemin türü
+        
+
 
 # Objeler
 object_data[8, 5] = 1
 object_data[8, 6] = 2
+
 object_data[9, 7] = 3
 object_data[10, 8] = 4
-object_data[13, 9] = 6
 
+
+#Hole
+object_data[13, 9] = 6
 object_data[16, 10] = 7
-object_data[19, 11] = 8
 
 #Create Forest
 # Sağ tarafa ikişer tane indeksi 5 olan öğe ekle
@@ -135,41 +176,30 @@ for y in range(0, 22, 2):  # 2 satırda bir öğe ekle
     # for x in range(3, 5, 2):
     #     object_data[y, x] = 13
 
-#Create Water
-object_data[4, 25] = 15
-
-for x in range(26, 31, 1):
-    object_data[4, x] = 16
-
-for y in range(5, 10, 1):  
-    object_data[y, 25] = 18
-
-object_data[10, 25] = 21
-
-for x in range(26, 31, 1):
-    object_data[10, x] = 22
-
-object_data[10, 31] = 23
-
-for y in range(5, 10, 1):  
-    object_data[y, 31] = 20
-
-object_data[4, 31] = 17    
-
-# for y in range(4, 10, 1):  
-#     for x in range(25, 31, 1):  
 
 
-for y in range(5, 10, 1):
-    for x in range(26, 31, 1):
-        object_data[y, x] = random.choice([19, 24])
+object_data[4,19]=25
+object_data[9,26]=26
 
-        
-# def draw_map():
-#     for y in range(len(map_data2)):
-#         for x in range(len(map_data2[y])):
-#             tile_index = map_data2[y][x]
-#             screen.blit(tiles[tile_index], (x * TILE_SIZE, y * TILE_SIZE))
+object_data[19, 4] = 32
+
+object_data[3, 16] = 33
+
+#library
+object_data[5,2]=29
+
+#little forest
+object_data[13, 16] = 5
+object_data[12, 16] = 35
+object_data[13,18]=36
+object_data[15,16]=34
+object_data[13,15]=37
+
+object_data[13, 20] = 4
+object_data[16, 19] = 4
+
+object_data[18, 28] = 31
+object_data[14, 29] = 27
 
 
 def draw_map():

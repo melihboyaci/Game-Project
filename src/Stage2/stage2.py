@@ -10,8 +10,7 @@ TILE_SIZE = 32
 
 import tile_assets 
 import Player as Player
-import Enemy as Enemy 
-
+import Enemy as Enemy
 
 pygame.display.set_caption("Tile Map Test")
 
