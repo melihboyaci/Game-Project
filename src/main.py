@@ -9,6 +9,10 @@ from enemy import Enemy, EnemyManager
 from collision_manager import CollisionManager
 from background import Background
 
+bullet_icon = pygame.image.load("assets/Rifle_Stage_Assets/images/bullet_icon.png")
+hp_icon = pygame.image.load("assets/Rifle_Stage_Assets/images/hp_icon.png")
+enemy_icon = pygame.image.load("assets/Rifle_Stage_Assets/images/enemy_icon.png")
+
 pygame.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 pygame.display.set_caption(TITLE)
@@ -35,6 +39,8 @@ while running:
     old_rect = player.rect.copy()
     old_collision_rect = player.collision_rect.copy()
     player.update(keys, SCREEN_WIDTH, SCREEN_HEIGHT)
+    if getattr(player, 'death_animation_finished', False):
+        running = False
     enemy_manager.update(player, background.get_blocks())
 
     # Çarpışma kontrolü
@@ -46,7 +52,6 @@ while running:
     for enemy in enemy_manager.enemies:
         for bullet in enemy.bullet_sprites.sprites():
             if player.collision_rect.colliderect(bullet.rect):
-                print(f"Oyuncu hasar aldı! Alınan hasar: {ENEMY_DAMAGE}")
                 player.take_damage(ENEMY_DAMAGE)
                 bullet.kill()
 
@@ -61,10 +66,8 @@ while running:
         for enemy in enemy_manager.enemies:
             collision, damage = CollisionManager.check_bullet_enemy_collision(bullet, enemy)
             if collision:
-                print(f"Çarpışma tespit edildi! Verilen hasar: {damage}")
                 if enemy.take_damage(damage):
-                    print("Düşman öldü!")
-                    enemy_manager.remove_dead_enemy(enemy)
+                    pass
                 bullet.kill()
                 break
 
@@ -75,17 +78,20 @@ while running:
     player.draw(screen, background.get_blocks())
     enemy_manager.draw(screen, background.get_blocks())
 
-    # Mermi sayısını ekrana yaz
-    bullet_text = font.render(f"Bullets: {player.bullets}", True, (255, 255, 255))
-    screen.blit(bullet_text, (100, 10))
+    # Mermi ikonu ve sayısı
+    screen.blit(bullet_icon, (860, 10))
+    bullet_text = font.render(f"{player.bullets}", True, (255, 255, 255))
+    screen.blit(bullet_text, (890, 10))  # ikonun sağına
 
-    # Oyuncu canını ekrana yaz
-    health_text = font.render(f"Health: {player.health}", True, (255, 255, 255))
-    screen.blit(health_text, (100, 30))
+    # Can ikonu ve sayısı
+    screen.blit(hp_icon, (860, 35))
+    health_text = font.render(f"{player.health}", True, (255, 255, 255))
+    screen.blit(health_text, (890, 35))
 
-    # Kalan düşman sayısını ekrana yaz
-    enemies_text = font.render(f"Enemies: {enemy_manager.get_enemy_count()}", True, (255, 255, 255))
-    screen.blit(enemies_text, (100, 50))
+    # Düşman ikonu ve sayısı
+    screen.blit(enemy_icon, (860, 60))
+    enemies_text = font.render(f"{enemy_manager.get_enemy_count()}", True, (255, 255, 255))
+    screen.blit(enemies_text, (890, 60))
 
     pygame.display.flip()
     clock.tick(FPS)

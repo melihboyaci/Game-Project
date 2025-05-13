@@ -1,5 +1,5 @@
 import pygame
-from settings import ENEMY_DAMAGE
+from settings import ENEMY_DAMAGE, SPRITE_SCALE
 
 class CollisionManager:
     @staticmethod
@@ -15,11 +15,11 @@ class CollisionManager:
         """Düşman mermisi ve oyuncu arasındaki çarpışmayı kontrol eder"""
         if enemy.firing:
             if enemy.facing_right:
-                bullet_start = (enemy.rect.left + 23, enemy.rect.top + 12)
-                bullet_end = (bullet_start[0] + 146, bullet_start[1])
+                bullet_start = (enemy.rect.left + 11.5*SPRITE_SCALE, enemy.rect.top + 6*SPRITE_SCALE)
+                bullet_end = (bullet_start[0] + 73*SPRITE_SCALE, bullet_start[1])
             else:
-                bullet_start = (enemy.rect.left + 0, enemy.rect.top + 12)
-                bullet_end = (bullet_start[0] - 146, bullet_start[1])
+                bullet_start = (enemy.rect.left + 0, enemy.rect.top + 6*SPRITE_SCALE)
+                bullet_end = (bullet_start[0] - 73*SPRITE_SCALE, bullet_start[1])
             
             bullet_rect = pygame.Rect(
                 min(bullet_start[0], bullet_end[0]), 
@@ -37,7 +37,7 @@ class CollisionManager:
         """Mermi sprite'ı ve düşman arasındaki çarpışmayı kontrol eder"""
         if bullet.rect.colliderect(enemy.collision_rect):
             # Kafa vuruşu kontrolü - düşmanın üst 10 piksellik kısmı
-            is_headshot = enemy.collision_rect.top <= bullet.rect.centery <= enemy.collision_rect.top + 10
+            is_headshot = enemy.collision_rect.top-10 <= bullet.rect.centery <= enemy.collision_rect.top + 5*SPRITE_SCALE
             if is_headshot:
                 print("Kafa vuruşu!")
             damage = 100 if is_headshot else ENEMY_DAMAGE

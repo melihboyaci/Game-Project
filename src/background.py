@@ -1,5 +1,5 @@
 import pygame
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT
+from settings import SCREEN_WIDTH, SCREEN_HEIGHT, SPRITE_SCALE
 
 class Background:
     def __init__(self):
@@ -21,7 +21,7 @@ class Background:
         block_positions = [
             # Block1'ler
             (101, 164), (620, 158), (441, 510), (508, 514), (163, 398),
-            (939, 318), (871, 327), (462, 91),
+            (871, 327), (462, 91),
             
             # Block2'ler
             (68, 158), (330, 182), (332, 215), (335, 248), (660, 124),
@@ -30,12 +30,12 @@ class Background:
         ]
         
         # Block1'leri ekle
-        for x, y in block_positions[:8]:  # İlk 8 konum Block1 için
+        for x, y in block_positions[:7]:  # İlk 8 konum Block1 için
             block = Block1(x, y)
             self.blocks.add(block)
         
         # Block2'leri ekle
-        for x, y in block_positions[8:]:  # Kalan konumlar Block2 için
+        for x, y in block_positions[7:]:  # Kalan konumlar Block2 için
             block = Block2(x, y)
             self.blocks.add(block)
     

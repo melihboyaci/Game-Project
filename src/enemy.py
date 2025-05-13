@@ -4,7 +4,8 @@ import os
 from settings import (
     SCREEN_WIDTH, SCREEN_HEIGHT, ENEMY_SPEED, ENEMY_BULLETS, ENEMY_HEALTH,
     ENEMY_DETECTION_RANGE, ENEMY_FIRE_RANGE, ENEMY_FIRE_COOLDOWN,
-    ENEMY_DAMAGE, ENEMY_VERTICAL_THRESHOLD
+    ENEMY_DAMAGE, ENEMY_VERTICAL_THRESHOLD, DEATH_ANIMATION_SPEED, SPRITE_SCALE,
+    BULLET_MAX_DISTANCE
 )
 from soldier import Player
 from objects import Bullet
@@ -21,6 +22,7 @@ class Enemy(Player):
         self.spritesheet_reload = pygame.image.load(os.path.join(base_path, "reload.png")).convert_alpha()
         self.spritesheet_idle = pygame.image.load(os.path.join(base_path, "soldier-rifle.png")).convert_alpha()
         self.spritesheet_damaged = pygame.image.load(os.path.join(base_path, "damaged.png")).convert_alpha()
+        self.spritesheet_death = pygame.image.load(os.path.join(base_path, "death.png")).convert_alpha()
 
         self.frame_width = 102
         self.frame_height = 36
@@ -30,12 +32,13 @@ class Enemy(Player):
         self.num_frames_reload = self.spritesheet_reload.get_width() // self.frame_width
         self.num_frames_idle = self.spritesheet_idle.get_width() // self.frame_width
         self.num_frames_damaged = self.spritesheet_damaged.get_width() // self.frame_width
+        self.num_frames_death = self.spritesheet_death.get_width() // self.frame_width
 
         # Run animasyon kareleri
         self.frames_run_right = [
             pygame.transform.scale(
                 self.spritesheet_run.subsurface(pygame.Rect(i * self.frame_width, 0, self.frame_width, self.frame_height)),
-                (self.frame_width * 2, self.frame_height * 2)
+                (self.frame_width * SPRITE_SCALE, self.frame_height * SPRITE_SCALE)
             ) for i in range(self.num_frames_run)
         ]
         self.frames_run_left = [pygame.transform.flip(frame, True, False) for frame in self.frames_run_right]
@@ -44,7 +47,7 @@ class Enemy(Player):
         self.frames_fire_right = [
             pygame.transform.scale(
                 self.spritesheet_fire.subsurface(pygame.Rect(i * self.frame_width, 0, self.frame_width, self.frame_height)),
-                (self.frame_width * 2, self.frame_height * 2)
+                (self.frame_width * SPRITE_SCALE, self.frame_height * SPRITE_SCALE)
             ) for i in range(self.num_frames_fire)
         ]
         self.frames_fire_left = [pygame.transform.flip(frame, True, False) for frame in self.frames_fire_right]
@@ -53,7 +56,7 @@ class Enemy(Player):
         self.frames_reload_right = [
             pygame.transform.scale(
                 self.spritesheet_reload.subsurface(pygame.Rect(i * self.frame_width, 0, self.frame_width, self.frame_height)),
-                (self.frame_width * 2, self.frame_height * 2)
+                (self.frame_width * SPRITE_SCALE, self.frame_height * SPRITE_SCALE)
             ) for i in range(self.num_frames_reload)
         ]
         self.frames_reload_left = [pygame.transform.flip(frame, True, False) for frame in self.frames_reload_right]
@@ -62,7 +65,7 @@ class Enemy(Player):
         self.frames_idle_right = [
             pygame.transform.scale(
                 self.spritesheet_idle.subsurface(pygame.Rect(i * self.frame_width, 0, self.frame_width, self.frame_height)),
-                (self.frame_width * 2, self.frame_height * 2)
+                (self.frame_width * SPRITE_SCALE, self.frame_height * SPRITE_SCALE)
             ) for i in range(self.num_frames_idle)
         ]
         self.frames_idle_left = [pygame.transform.flip(frame, True, False) for frame in self.frames_idle_right]
@@ -71,10 +74,19 @@ class Enemy(Player):
         self.frames_damaged_right = [
             pygame.transform.scale(
                 self.spritesheet_damaged.subsurface(pygame.Rect(i * self.frame_width, 0, self.frame_width, self.frame_height)),
-                (self.frame_width * 2, self.frame_height * 2)
+                (self.frame_width * SPRITE_SCALE, self.frame_height * SPRITE_SCALE)
             ) for i in range(self.num_frames_damaged)
         ]
         self.frames_damaged_left = [pygame.transform.flip(frame, True, False) for frame in self.frames_damaged_right]
+
+        # Death animasyon kareleri
+        self.frames_death_right = [
+            pygame.transform.scale(
+                self.spritesheet_death.subsurface(pygame.Rect(i * self.frame_width, 0, self.frame_width, self.frame_height)),
+                (self.frame_width * SPRITE_SCALE, self.frame_height * SPRITE_SCALE)
+            ) for i in range(self.num_frames_death)
+        ]
+        self.frames_death_left = [pygame.transform.flip(frame, True, False) for frame in self.frames_death_right]
 
         # Düşman özellikleri
         self.health = ENEMY_HEALTH
@@ -92,10 +104,10 @@ class Enemy(Player):
         self.last_damage_time = 0
 
         # Düşman karakterinin gerçek boyutu ve offseti (oyuncu ile aynı)
-        self.karakter_genislik = 22
-        self.karakter_yukseklik = 36
-        self.karakter_offset_x = 20
-        self.karakter_offset_y = 20
+        self.karakter_genislik = 11*SPRITE_SCALE
+        self.karakter_yukseklik = 22*SPRITE_SCALE
+        self.karakter_offset_x = 10*SPRITE_SCALE
+        self.karakter_offset_y = 9*SPRITE_SCALE
 
         self.collision_rect = pygame.Rect(
             self.rect.left + self.karakter_offset_x,
@@ -107,21 +119,49 @@ class Enemy(Player):
 
         self.bullet_sprites = pygame.sprite.Group()
 
+        # Death animasyonu için değişkenler
+        self.dead = False
+        self.death_frame = 0
+        self.death_timer = 0
+        self.death_animation_speed = DEATH_ANIMATION_SPEED
+
     def take_damage(self, damage):
         """Düşman hasar aldığında çağrılır"""
         current_time = pygame.time.get_ticks()
         if current_time - self.last_damage_time > self.damaged_duration:
-            print(f"Düşman hasar aldı! Alınan hasar: {damage}")
             self.health = max(0, self.health - damage)  # Can 0'ın altına düşmesin
+            print(f"Düşman hasar aldı! Alınan hasar: {damage} | Kalan can: {self.health}")
             self.damaged = True
             self.damaged_frame = 0
             self.damaged_timer = 0
             self.last_damage_time = current_time
             if self.health <= 0:
+                self.dead = True
+                self.death_frame = 0
+                self.death_timer = 0
+                self.firing = False
+                self.moving = False
+                self.reloading = False
                 return True
+            return False
         return False
 
     def update(self, player, blocks):
+        # Öncelikle ölüm animasyonu kontrolü
+        if self.dead:
+            self.death_timer += self.death_animation_speed
+            if self.death_timer >= 1:
+                self.death_frame += 1
+                self.death_timer = 0
+            if self.death_frame >= self.num_frames_death:
+                self.kill()
+                return
+            if self.facing_right:
+                self.image = self.frames_death_right[min(self.death_frame, self.num_frames_death-1)]
+            else:
+                self.image = self.frames_death_left[min(self.death_frame, self.num_frames_death-1)]
+            return
+
         # Eğer düşman öldüyse güncelleme yapma
         if self.health <= 0:
             return
@@ -158,13 +198,13 @@ class Enemy(Player):
             self.last_fire_time = current_time
             # Mermi sprite'ı oluştur
             if self.facing_right:
-                    start_pos = (self.rect.left + 52, self.rect.top + 36)
-                    # Mermi izinin bittiği noktayı bulmak için:
-                    step = 1
+                start_pos = (self.rect.left + 26*SPRITE_SCALE, self.rect.top + 18*SPRITE_SCALE)
+                # Mermi izinin bittiği noktayı bulmak için:
+                step = 1
             else:
-                    start_pos = (self.rect.left -20, self.rect.top + 36)
-                    step = -1
-            max_length = 146
+                start_pos = (self.rect.left -10*SPRITE_SCALE, self.rect.top + 18*SPRITE_SCALE)
+                step = -1
+            max_length = BULLET_MAX_DISTANCE
             end_pos = (start_pos[0] + step * max_length, start_pos[1])
             if blocks is not None:
                 for i in range(max_length):
@@ -213,7 +253,7 @@ class Enemy(Player):
 
     def draw(self, surface, blocks=None):
         if not self.facing_right:
-            surface.blit(self.image, (self.rect.x - 150, self.rect.y))
+            surface.blit(self.image, (self.rect.x - 75*SPRITE_SCALE, self.rect.y))
         else:
             surface.blit(self.image, self.rect.topleft)
         # Düşman mermilerini çiz
@@ -228,7 +268,7 @@ class EnemyManager:
     def is_valid_position(self, x, y, blocks=None):
         """Yeni düşman pozisyonunun geçerli olup olmadığını kontrol et"""
         # Ekran sınırları kontrolü
-        if x < 50 or x > SCREEN_WIDTH - 50 or y < 50 or y > SCREEN_HEIGHT - 50:
+        if x < 25*SPRITE_SCALE or x > SCREEN_WIDTH - 25*SPRITE_SCALE or y < 25*SPRITE_SCALE or y > SCREEN_HEIGHT - 25*SPRITE_SCALE:
             return False
         
         # Diğer düşmanlarla mesafe kontrolü
@@ -242,10 +282,10 @@ class EnemyManager:
         # Bloklarla çakışma kontrolü
         if blocks:
             # Güncel çarpışma kutusu boyutları ve offsetiyle test_rect oluştur
-            karakter_genislik = 18
-            karakter_yukseklik = 36
-            karakter_offset_x = 20
-            karakter_offset_y = 20
+            karakter_genislik = 9*SPRITE_SCALE
+            karakter_yukseklik = 18*SPRITE_SCALE
+            karakter_offset_x = 10*SPRITE_SCALE
+            karakter_offset_y = 10*SPRITE_SCALE
             test_rect = pygame.Rect(x + karakter_offset_x, y + karakter_offset_y, karakter_genislik, karakter_yukseklik)
             for block in blocks:
                 if test_rect.colliderect(block.rect):
@@ -260,8 +300,8 @@ class EnemyManager:
             max_attempts = 50  # Maksimum deneme sayısı
             
             while attempts < max_attempts:
-                x = random.randint(50, SCREEN_WIDTH - 50)
-                y = random.randint(50, SCREEN_HEIGHT - 50)
+                x = random.randint(25, SCREEN_WIDTH - 25)
+                y = random.randint(25, SCREEN_HEIGHT - 25)
                 if self.is_valid_position(x, y, blocks):
                     enemy = Enemy(x, y, ENEMY_SPEED, ENEMY_BULLETS)
                     self.enemies.add(enemy)
@@ -284,7 +324,3 @@ class EnemyManager:
     def get_enemy_count(self):
         """Kalan düşman sayısını döndür"""
         return len(self.enemies)
-
-    def remove_dead_enemy(self, enemy):
-        """Ölen düşmanı gruptan kaldır"""
-        enemy.kill() 
