@@ -18,6 +18,14 @@ class Player:
             "hurt": {},
             "death": {}
         }
+
+        self.attack1_sound = pygame.mixer.Sound("assets/Middle_Age_Assets/sounds/sword-normal.mp3")
+        self.attack1_sound.set_volume(0.3)
+
+        self.attack2_sound = pygame.mixer.Sound("assets/Middle_Age_Assets/sounds/sword-ultimate.mp3")
+        self.attack2_sound.set_volume(0.5)
+        
+
         self.load_animations()
         self.state = "idle"
         self.frame_index = 0
@@ -131,6 +139,10 @@ class Player:
         if dx != 0:
             next_hitbox_x = self.get_hitbox_rect().move(dx * self.speed, 0)
             can_move_x = True
+            # Sınır kontrolü
+            if not self.is_within_map(next_hitbox_x):
+                can_move_x = False
+            # Diğer çarpışma kontrolleri...
             for rect in solid_rects:
                 if next_hitbox_x.colliderect(rect):
                     can_move_x = False
@@ -150,6 +162,10 @@ class Player:
         if dy != 0:
             next_hitbox_y = self.get_hitbox_rect().move(0, dy * self.speed)
             can_move_y = True
+            # Sınır kontrolü
+            if not self.is_within_map(next_hitbox_y):
+                can_move_y = False
+            # Diğer çarpışma kontrolleri...
             for rect in solid_rects:
                 if next_hitbox_y.colliderect(rect):
                     can_move_y = False
@@ -174,6 +190,10 @@ class Player:
                 self.last_attack_time[attack_name] = now
                 self.attack_message = f"{attack_name.upper()} kullanıldı!"
                 print(f"{attack_name} kullanıldı! Hasar: {self.attack_damage[attack_name]}")
+                if attack_name == "attack1":
+                    self.attack1_sound.play()
+                elif attack_name == "attack2":
+                    self.attack2_sound.play()
                 return
 
         if self.state.startswith("attack"):
@@ -377,4 +397,16 @@ class Player:
             center_y - hitbox_size // 2,
             hitbox_size,
             hitbox_size
+        )
+    
+
+    def is_within_map(self,rect):
+        """Verilen rect'in harita sınırları içinde olup olmadığını kontrol eder."""
+        map_width=1280
+        map_height=704
+        return (
+            rect.left >= 0 and
+            rect.top >= 0 and
+            rect.right <= map_width and
+            rect.bottom <= map_height
         )

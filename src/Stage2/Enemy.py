@@ -18,6 +18,9 @@ class Enemy:
             "hurt": {},  # Hasar alma animasyonu
             "death": {}  # Ölüm animasyonu
         }
+        self.hurt_sound=pygame.mixer.Sound("assets\Middle_Age_Assets\sounds\orc-hurt.mp3")
+
+
         self.load_animations()
         self.state = "idle"
         self.frame_index = 0
@@ -83,6 +86,7 @@ class Enemy:
             self.animations[state]["left"]  = [pygame.transform.flip(f, True, False) for f in base_frames]
 
     def take_damage(self, damage):
+        self.hurt_sound.play()  # Hasar alma sesi çal
         self.health -= damage
         self.state = "hurt"
         self.frame_index = 0
@@ -171,6 +175,10 @@ class Enemy:
                 if step_x != 0:
                     next_hitbox_x = self.get_hitbox_rect().move(step_x, 0)
                     can_move_x = True
+                    #Sınır kontrolü
+                    if not self.is_within_map(next_hitbox_x):
+                        can_move_x = False
+                    # Diğer çarpışma kontrolleri...
                     for rect in solid_rects:
                         if next_hitbox_x.colliderect(rect):
                             can_move_x = False
@@ -189,6 +197,10 @@ class Enemy:
                 if step_y != 0:
                     next_hitbox_y = self.get_hitbox_rect().move(0, step_y)
                     can_move_y = True
+                    #Sınır kontrolü
+                    if not self.is_within_map(next_hitbox_y):
+                        can_move_x = False
+                    # Diğer çarpışma kontrolleri...
                     for rect in solid_rects:
                         if next_hitbox_y.colliderect(rect):
                             can_move_y = False
@@ -294,4 +306,16 @@ class Enemy:
             center_y - hitbox_size // 2,
             hitbox_size,
             hitbox_size
+        )
+    
+
+    def is_within_map(self,rect):
+        """Verilen rect'in harita sınırları içinde olup olmadığını kontrol eder."""
+        map_width=1280
+        map_height=704
+        return (
+            rect.left >= 0 and
+            rect.top >= 0 and
+            rect.right <= map_width and
+            rect.bottom <= map_height
         )

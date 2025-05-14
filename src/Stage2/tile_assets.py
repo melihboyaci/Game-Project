@@ -17,6 +17,8 @@ tileStufs = pygame.image.load("assets/Middle_Age_Assets/Forest_TileSet/tileStufs
 
 tree_assets=pygame.image.load("assets/Middle_Age_Assets/Forest_TileSet/tree_assets.png").convert_alpha()
 
+littlethings=pygame.image.load("assets/Middle_Age_Assets/Forest_TileSet/littlethings.png").convert_alpha()
+
 # Tile'ları kes
 grassGround    = tileset.subsurface((0, 0, TILE_SIZE, TILE_SIZE))
 flavourGrass   = tileset.subsurface((TILE_SIZE, 0, TILE_SIZE, TILE_SIZE))
@@ -81,6 +83,18 @@ tree_up=tree_assets.subsurface((0,TILE_SIZE,TILE_SIZE*2,TILE_SIZE*1))
 tree_right=tree_assets.subsurface((0,TILE_SIZE*2,TILE_SIZE*1,TILE_SIZE*2))
 tree_left=tree_assets.subsurface((TILE_SIZE*1,TILE_SIZE*2,TILE_SIZE*1,TILE_SIZE*2))
 
+
+
+little_thing1= littlethings.subsurface((0, 0, TILE_SIZE, TILE_SIZE))
+little_thing2= littlethings.subsurface((0,TILE_SIZE, TILE_SIZE, TILE_SIZE))
+little_thing3= littlethings.subsurface((0,TILE_SIZE*2, TILE_SIZE, TILE_SIZE))
+little_thing4= littlethings.subsurface((0,TILE_SIZE*3, TILE_SIZE, TILE_SIZE))
+little_thing5= littlethings.subsurface((0,TILE_SIZE*4, TILE_SIZE, TILE_SIZE*2))
+
+# Küçük şeylerin boyutunu ayarla
+little_thing1 = pygame.transform.scale(little_thing1, (TILE_SIZE *2 /3, TILE_SIZE*2 /3))
+little_thing4 = pygame.transform.scale(little_thing4, (TILE_SIZE *2 /3, TILE_SIZE *2 /3))
+
 #????
 tile_dict = {
     0: {"image": grassGround, "walkable": True},
@@ -129,6 +143,11 @@ object_dict = {
     35: {"image": tree_up, "walkable": False, "size": (2, 1)},
     36: {"image": tree_right, "walkable": False, "size": (1, 2)},
     37: {"image": tree_left, "walkable": False, "size": (1, 2)},
+    38: {"image": little_thing1, "walkable": True, "size": (1, 1)}, 
+    39: {"image": little_thing2, "walkable": True, "size": (1, 1)},
+    40: {"image": little_thing3, "walkable": False, "size": (1, 1)},
+    41: {"image": little_thing4, "walkable": True, "size": (1, 1)},
+    42: {"image": little_thing5, "walkable": False, "size": (1, 2)},
 }
 
 # Map datası
@@ -150,13 +169,21 @@ for y in range(22):
 
 
 # Objeler
-object_data[8, 5] = 1
-object_data[8, 6] = 2
+object_data[3, 5] = 1
+object_data[7, 6] = 2
 
-object_data[9, 7] = 3
+object_data[8, 7] = 3
 object_data[10, 8] = 4
+object_data[1, 9] = 4
 
 
+#little things
+object_data[2, 1] = 40
+object_data[3, 24] = 41
+object_data[2, 20] = 38
+
+object_data[6, 5] = 42
+object_data[8,3]=42
 #Hole
 object_data[13, 9] = 6
 object_data[16, 10] = 7
@@ -181,12 +208,14 @@ for y in range(0, 22, 2):  # 2 satırda bir öğe ekle
 object_data[4,19]=25
 object_data[9,26]=26
 
-object_data[19, 4] = 32
+object_data[19, 7] = 32
 
 object_data[3, 16] = 33
 
-#library
-object_data[5,2]=29
+
+
+#woods
+object_data[5,2]=30
 
 #little forest
 object_data[13, 16] = 5
@@ -197,6 +226,16 @@ object_data[13,15]=37
 
 object_data[13, 20] = 4
 object_data[16, 19] = 4
+
+
+#little forest 2
+object_data[15, 0] = 5
+object_data[14, 0] = 35
+object_data[15,2]=36
+object_data[17,0]=34
+object_data[16, 4] = 4
+object_data[19, 1] = 4
+
 
 object_data[18, 28] = 31
 object_data[14, 29] = 27

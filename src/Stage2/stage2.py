@@ -5,6 +5,8 @@ import random
 
 
 pygame.init()
+pygame.mixer.init()
+
 
 TILE_SIZE = 32
 
@@ -12,26 +14,13 @@ import tile_assets
 import Player as Player
 import Enemy as Enemy
 
-pygame.display.set_caption("Tile Map Test")
-
-
-
-
-# #yürünebilirlik kontrolü
-# # (x, y) koordinatındaki tile ve object'in yürünebilirliğini kontrol eder
-# def is_walkable(x, y):
-#     if x < 0 or y < 0 or x >= map_data.shape[1] or y >= map_data.shape[0]:
-#         return False
-#     tile_walkable = tile_assets.tile_dict[map_data[y][x]]["walkable"]
-#     object_walkable = tile_assets.object_dict[object_data[y][x]]["walkable"]
-#     return tile_walkable and object_walkable
-
+pygame.display.set_caption("Tile Map Test") 
 
 
 player = Player.Player(100, 100)
 clock = pygame.time.Clock()
 running = True
-enemies = [Enemy.Enemy(300, 100), Enemy.Enemy(500, 200), Enemy.Enemy(1000, 1000)]  # Enemy nesneleri listesi
+enemies = [Enemy.Enemy(300, 100), Enemy.Enemy(500, 200), Enemy.Enemy(500, 250 )]  # Enemy nesneleri listesi
 
 
 solid_rects = tile_assets.create_solid_rects()  # Yürünemez alanları oluştur
