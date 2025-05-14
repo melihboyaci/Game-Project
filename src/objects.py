@@ -8,6 +8,7 @@ class Block1(pygame.sprite.Sprite):
         original_image = pygame.image.load("assets/Rifle_Stage_Assets/background_tileset/Block1.png").convert_alpha()
         self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
         self.rect = self.image.get_rect(topleft=(x, y))
+        self.collidable = True
 
 class Block2(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -15,15 +16,15 @@ class Block2(pygame.sprite.Sprite):
         original_image = pygame.image.load("assets/Rifle_Stage_Assets/background_tileset/Block2.png").convert_alpha()
         self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
         self.rect = self.image.get_rect(topleft=(x, y))
-
+        self.collidable = True
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, start_pos, end_pos):
+    def __init__(self, start_pos, end_pos, speed):
         super().__init__()
         original_image = pygame.image.load("assets/Rifle_Stage_Assets/images/bullet.png").convert_alpha()
         self.image = pygame.transform.scale(original_image, (18.5*SPRITE_SCALE/1.5, 3*SPRITE_SCALE/1.5))
         self.rect = pygame.Rect(0, 0, 18.5*SPRITE_SCALE/1.5, 3*SPRITE_SCALE/1.5)
         self.rect.center = start_pos
-        self.speed = PLAYER_BULLET_SPEED
+        self.speed = speed
         dx = end_pos[0] - start_pos[0]
         dy = end_pos[1] - start_pos[1]
         distance = math.hypot(dx, dy)
@@ -44,3 +45,42 @@ class Bullet(pygame.sprite.Sprite):
         if self.traveled >= self.max_distance:
             """ print("Bullet killed (reached max distance)") """   
             self.kill() 
+
+class Rock1(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        original_image = pygame.image.load("assets/Rifle_Stage_Assets/background_tileset/rock1.png").convert_alpha()
+        self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.collidable = False
+
+class Rock2(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        original_image = pygame.image.load("assets/Rifle_Stage_Assets/background_tileset/rock2.png").convert_alpha()
+        self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.collidable = False
+
+class Rock3(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        original_image = pygame.image.load("assets/Rifle_Stage_Assets/background_tileset/rock3.png").convert_alpha()
+        self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.collidable = False
+
+class Stump(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        original_image = pygame.image.load("assets/Rifle_Stage_Assets/background_tileset/stump.png").convert_alpha()
+        self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.collidable = True
+class Tree1(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        original_image = pygame.image.load("assets/Rifle_Stage_Assets/background_tileset/tree1.png").convert_alpha()
+        self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.collidable = False

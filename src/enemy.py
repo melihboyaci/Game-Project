@@ -5,12 +5,13 @@ from settings import (
     SCREEN_WIDTH, SCREEN_HEIGHT, ENEMY_SPEED, ENEMY_BULLETS, ENEMY_HEALTH,
     ENEMY_DETECTION_RANGE, ENEMY_FIRE_RANGE, ENEMY_FIRE_COOLDOWN,
     ENEMY_DAMAGE, ENEMY_VERTICAL_THRESHOLD, DEATH_ANIMATION_SPEED, SPRITE_SCALE,
-    BULLET_MAX_DISTANCE
+    BULLET_MAX_DISTANCE, ENEMY_BULLET_SPEED
 )
 from soldier import Player
 from objects import Bullet
 
 class Enemy(Player):
+    ENEMY_FIRE_SOUND = None  # Sadece bir kez yüklenecek
     def __init__(self, x, y, speed, bullets):
         super().__init__(x, y, speed, bullets)
         
@@ -147,6 +148,7 @@ class Enemy(Player):
         return False
 
     def update(self, player, blocks):
+        self.bullet_sprites.update()  # Mermiler her durumda sadece bir kez güncellenir
         # Öncelikle ölüm animasyonu kontrolü
         if self.dead:
             self.death_timer += self.death_animation_speed
@@ -199,7 +201,6 @@ class Enemy(Player):
             # Mermi sprite'ı oluştur
             if self.facing_right:
                 start_pos = (self.rect.left + 26*SPRITE_SCALE, self.rect.top + 18*SPRITE_SCALE)
-                # Mermi izinin bittiği noktayı bulmak için:
                 step = 1
             else:
                 start_pos = (self.rect.left -10*SPRITE_SCALE, self.rect.top + 18*SPRITE_SCALE)
@@ -217,7 +218,11 @@ class Enemy(Player):
                     else:
                         continue
                     break
-            self.bullet_sprites.add(Bullet(start_pos, end_pos))
+            self.bullet_sprites.add(Bullet(start_pos, end_pos, ENEMY_BULLET_SPEED))
+            # Sesi ilk ateş anında yükle ve çal
+            if Enemy.ENEMY_FIRE_SOUND is None:
+                Enemy.ENEMY_FIRE_SOUND = pygame.mixer.Sound('assets/Rifle_Stage_Assets/sounds/ak_new.wav')
+            Enemy.ENEMY_FIRE_SOUND.play()
         # --- Animasyon güncelle ---
         if self.firing:
             self.fire_timer += self.animation_speed * 2
@@ -249,7 +254,6 @@ class Enemy(Player):
             self.rect.left + self.karakter_offset_x,
             self.rect.top + self.karakter_offset_y
         )
-        self.bullet_sprites.update()
 
     def draw(self, surface, blocks=None):
         if not self.facing_right:
@@ -268,7 +272,7 @@ class EnemyManager:
     def is_valid_position(self, x, y, blocks=None):
         """Yeni düşman pozisyonunun geçerli olup olmadığını kontrol et"""
         # Ekran sınırları kontrolü
-        if x < 25*SPRITE_SCALE or x > SCREEN_WIDTH - 25*SPRITE_SCALE or y < 25*SPRITE_SCALE or y > SCREEN_HEIGHT - 25*SPRITE_SCALE:
+        if x < 30*SPRITE_SCALE or x > SCREEN_WIDTH - 30*SPRITE_SCALE or y < 30*SPRITE_SCALE or y > SCREEN_HEIGHT - 30*SPRITE_SCALE:
             return False
         
         # Diğer düşmanlarla mesafe kontrolü

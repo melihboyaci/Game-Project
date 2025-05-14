@@ -1,10 +1,11 @@
 import pygame
 from settings import (
     PLAYER_FIRE_COOLDOWN, PLAYER_HEALTH, DEATH_ANIMATION_SPEED,
-    SPRITE_SCALE, BULLET_MAX_DISTANCE
+    SPRITE_SCALE, BULLET_MAX_DISTANCE, PLAYER_BULLET_SPEED
 )
 
 class Player(pygame.sprite.Sprite):
+    FIRE_SOUND = None  # Sadece bir kez yüklenecek
     def __init__(self, x, y, speed, bullets):
         super().__init__()
         
@@ -150,6 +151,7 @@ class Player(pygame.sprite.Sprite):
         return False
 
     def update(self, keys, screen_width, screen_height):
+        self.bullet_sprites.update()  # Mermiler her durumda sadece bir kez güncellenir
         # Öncelikle ölüm animasyonu kontrolü
         if self.dead:
             self.death_timer += self.death_animation_speed
@@ -212,14 +214,12 @@ class Player(pygame.sprite.Sprite):
                 from objects import Bullet
                 if self.facing_right:
                     start_pos = (self.rect.left + 26*SPRITE_SCALE, self.rect.top + 18*SPRITE_SCALE)
-                    # Mermi izinin bittiği noktayı bulmak için:
                     step = 1
                 else:
                     start_pos = (self.rect.left -10*SPRITE_SCALE, self.rect.top + 18*SPRITE_SCALE)
                     step = -1
                 max_length = BULLET_MAX_DISTANCE
                 end_pos = (start_pos[0] + step * max_length, start_pos[1])
-                # Bloklara çarpana kadar olan noktayı bul
                 if hasattr(self, 'blocks_for_bullet') and self.blocks_for_bullet is not None:
                     for i in range(max_length):
                         test_x = int(start_pos[0] + step * i)
@@ -231,7 +231,11 @@ class Player(pygame.sprite.Sprite):
                         else:
                             continue
                         break
-                self.bullet_sprites.add(Bullet(start_pos, end_pos))
+                self.bullet_sprites.add(Bullet(start_pos, end_pos, PLAYER_BULLET_SPEED))
+                # Sesi ilk ateş anında yükle ve çal
+                if Player.FIRE_SOUND is None:
+                    Player.FIRE_SOUND = pygame.mixer.Sound('assets/Rifle_Stage_Assets/sounds/savage10.wav')
+                Player.FIRE_SOUND.play()
 
         # Animasyon güncelle
         if self.firing:
@@ -267,6 +271,10 @@ class Player(pygame.sprite.Sprite):
             self.reloading = True
             self.reload_frame = 0
             self.reload_timer = 0
+            
+            Player.RELOAD_SOUND = pygame.mixer.Sound('assets/Rifle_Stage_Assets/sounds/reload.mp3')
+            Player.RELOAD_SOUND.set_volume(0.3)
+            Player.RELOAD_SOUND.play()
 
         # Reload animasyonu oynat
         if self.reloading:
@@ -277,15 +285,13 @@ class Player(pygame.sprite.Sprite):
             if self.reload_frame >= self.num_frames_reload:
                 self.reloading = False
                 self.reload_frame = 0
-                # Mermiyi doldur
                 from settings import PLAYER_BULLETS
                 self.bullets = PLAYER_BULLETS
-            # Reload animasyon karesi seç
             if self.facing_right:
                 self.image = self.frames_reload_right[min(self.reload_frame, self.num_frames_reload-1)]
             else:
                 self.image = self.frames_reload_left[min(self.reload_frame, self.num_frames_reload-1)]
-            return  # Reload sırasında başka animasyon oynama
+            return
 
         # Hasar animasyonu kontrolü
         if self.damaged:
@@ -296,14 +302,11 @@ class Player(pygame.sprite.Sprite):
             if self.damaged_frame >= self.num_frames_damaged:
                 self.damaged = False
                 self.damaged_frame = 0
-            # Hasar animasyon karesi seç
             if self.facing_right:
                 self.image = self.frames_damaged_right[min(self.damaged_frame, self.num_frames_damaged-1)]
             else:
                 self.image = self.frames_damaged_left[min(self.damaged_frame, self.num_frames_damaged-1)]
-            return  # Hasar animasyonu sırasında diğer animasyonları oynatma
-
-        self.bullet_sprites.update()
+            return
 
     def draw(self, surface, blocks=None):
         if not self.facing_right:

@@ -1,12 +1,12 @@
 import pygame
-from settings import ENEMY_DAMAGE, SPRITE_SCALE
+from settings import SPRITE_SCALE, PLAYER_DAMAGE, PLAYER_HEADSHOT_DAMAGE
 
 class CollisionManager:
     @staticmethod
     def check_player_block_collision(player, blocks):
         """Oyuncu ve bloklar arasındaki çarpışmayı kontrol eder"""
         for block in blocks:
-            if player.collision_rect.colliderect(block.rect):
+            if block.collidable and player.collision_rect.colliderect(block.rect):
                 return True
         return False
 
@@ -40,7 +40,7 @@ class CollisionManager:
             is_headshot = enemy.collision_rect.top-10 <= bullet.rect.centery <= enemy.collision_rect.top + 5*SPRITE_SCALE
             if is_headshot:
                 print("Kafa vuruşu!")
-            damage = 100 if is_headshot else ENEMY_DAMAGE
+            damage = PLAYER_HEADSHOT_DAMAGE if is_headshot else PLAYER_DAMAGE
             return True, damage
         return False, 0
 
@@ -48,6 +48,6 @@ class CollisionManager:
     def check_bullet_block_collision(bullet, blocks):
         """Mermi sprite'ı ve bloklar arasındaki çarpışmayı kontrol eder"""
         for block in blocks:
-            if bullet.rect.colliderect(block.rect):
+            if block.collidable and bullet.rect.colliderect(block.rect):
                 return True
         return False 
