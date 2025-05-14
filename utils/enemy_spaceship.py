@@ -14,7 +14,7 @@ class EnemySpaceship:
         self.target = target 
         self.bullets = []
         self.last_shot_time = 0
-        self.shoot_delay = 1000  # ms
+        self.shoot_delay = 2000  # ms
         self.destination = self.random_destination()
         self.see_distance = 600  # Görüş mesafesi
         self.health = 2
@@ -204,7 +204,10 @@ class EnemySpaceship:
         
         for bullet in self.bullets:
             bullet_screen_pos = (bullet.position[0] - camera_offset[0], bullet.position[1] - camera_offset[1])
-            screen.blit(bullet.sprite.image, bullet_screen_pos)
+            bullet_image = bullet.sprite.image.copy()
+            new_size = (int(bullet.size[0] * 1.5), int(bullet.size[1] * 1.5))
+            bullet_image = pygame.transform.scale(bullet_image, new_size)
+            screen.blit(bullet_image, bullet_screen_pos)
 
     def get_rect(self):
         return pygame.Rect(self.position[0], self.position[1], self.size[0], self.size[1])

@@ -20,6 +20,11 @@ class Spaceship:
         self.gun_firing = False
         self.gun_firing_time = 10
         self.gun_firing_duration = 480  # ms
+        self.exploding = False
+        self.explosion_frames = load_sprite_sheet("assets/Space_Stage_Assets/sprites/spaceship/explosion.png", 64, 64)
+        self.explosion_sprite = AnimatedSprite(self.explosion_frames, position, frame_delay=80)
+        self.explosion_time = 0 
+        self.explosion_duration = 732  
 
 
         if gun_path:
@@ -47,6 +52,19 @@ class Spaceship:
             self.engine_powering_anim = None
 
     def update(self, keys):
+        
+        if self.exploding:
+            self.explosion_sprite.pos = tuple(self.position)
+            self.explosion_sprite.update()
+            sound = pygame.mixer.Sound("assets/Space_Stage_Assets/sounds/explosion.wav")
+            sound.set_volume(0.5)
+            sound.play()
+
+            if pygame.time.get_ticks() - self.explosion_time > self.explosion_duration:
+                self.health = -99
+                self.exploding = False
+                return
+
         moving = False
         if keys[pygame.K_LEFT]:
             self.position[0] -= self.speed
@@ -91,7 +109,10 @@ class Spaceship:
             self.active_engine.pos = engine_pos
             self.active_engine.update()
 
-
+    def die(self):
+        self.exploding = True
+        self.explosion_time = pygame.time.get_ticks()
+        self.sprite.update = lambda: None  # Güncellemeyi durdur
 
     def fire(self):
         if self.gun_sprite:
@@ -114,8 +135,18 @@ class Spaceship:
             pygame.mixer.Sound("assets/Space_Stage_Assets/sounds/laserfirenew.mp3").play()
         
     def draw(self, screen, camera_offset):
+        if self.health <= 0 and not self.exploding:
+            return
+        
         screen_pos = (self.position[0] - camera_offset[0], self.position[1] - camera_offset[1])
         
+        if self.exploding:
+            explosion_img = self.explosion_sprite.image.copy()
+            new_size = (int(self.size[0] * self.scale), int(self.size[1] * self.scale))
+            explosion_img = pygame.transform.scale(explosion_img, new_size)
+            screen.blit(explosion_img, screen_pos)
+            return
+
         if self.gun_sprite:
             # Pozisyonu geminin sağ altına göre güncelle
             gun_x = screen_pos[0] + self.size[0] - 27  
@@ -161,12 +192,16 @@ class Spaceship:
     def take_damage(self, damage):
         # Hasar alındığında yapılacak işlemler
         self.health -= damage
-        if  7 <= self.health <= 11:
+        if self.health > 11:
+            pass
+        elif  7 <= self.health <= 11:
             self.change_ship_image("assets/Space_Stage_Assets/sprites/spaceship/main_ship/slight_damage.png", (48, 48))
         elif 3 <= self.health <= 6:
             self.change_ship_image("assets/Space_Stage_Assets/sprites/spaceship/main_ship/damaged.png", (48, 48))
         else:
             self.change_ship_image("assets/Space_Stage_Assets/sprites/spaceship/main_ship/very_damaged.png", (48, 48))
+        if self.health <= 0:
+            self.die()
 
     def change_ship_image(self, image_path, size):
         self.frames = load_sprite_sheet(image_path, *size)

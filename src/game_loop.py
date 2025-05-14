@@ -90,6 +90,7 @@ class game_loop:
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                     # Mermi ateşleme işlemi
                     self.spaceship.fire()
+                    
         
             
             self.screen.fill((0, 0, 0)) # Ekranı temizle siyah
@@ -109,6 +110,9 @@ class game_loop:
 
             draw_earth_bar(self.screen, self.enemy_manager.earth_bar)
             draw_health_bar(self.screen, self.spaceship.health)
+
+            if self.spaceship.health <= 0:
+                running = False
 
             pygame.display.flip() #ekran güncelle
 
