@@ -205,7 +205,7 @@ class EnemySpaceship:
         for bullet in self.bullets:
             bullet_screen_pos = (bullet.position[0] - camera_offset[0], bullet.position[1] - camera_offset[1])
             bullet_image = bullet.sprite.image.copy()
-            new_size = (int(bullet.size[0] * 1.5), int(bullet.size[1] * 1.5))
+            new_size = (int(bullet.size[0] * 2), int(bullet.size[1] * 2))
             bullet_image = pygame.transform.scale(bullet_image, new_size)
             screen.blit(bullet_image, bullet_screen_pos)
 

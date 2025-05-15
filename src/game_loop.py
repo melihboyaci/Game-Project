@@ -1,6 +1,6 @@
 import pygame, random
 from utils.planet import Planet
-from utils.views import draw_scrolling_bg, draw_earth_bar, draw_health_bar
+from utils.views import draw_scrolling_bg, draw_earth_bar, draw_health_bar, draw_base_health_bar
 from utils.spaceship import Spaceship
 from utils.camera import Camera
 from managers.enemy_manager import EnemyManager
@@ -110,10 +110,9 @@ class game_loop:
 
             draw_earth_bar(self.screen, self.enemy_manager.earth_bar)
             draw_health_bar(self.screen, self.spaceship.health)
-
-            if self.spaceship.health <= 0:
-                running = False
-
+            if self.enemy_manager.base_vulnerable and self.enemy_manager.enemy_base.alive:
+                draw_base_health_bar(self.screen, self.enemy_manager.enemy_base, self.camera, self.enemy_manager.enemy_base.health)            
+            
             pygame.display.flip() #ekran güncelle
 
             self.clock.tick(60) # FPS ayarla

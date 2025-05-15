@@ -110,8 +110,6 @@ def render_text_with_shadow(font, text, text_color, shadow_color, shadow_offset)
     surface.blit(text_surface, (0, 0))
     return surface
 
-
-
 def draw_background(screen, layers, alpha=255):
     for layer in layers:
         image_path = layer.get("image_path")
@@ -158,9 +156,25 @@ def draw_earth_bar(screen, earth_bar):
     pygame.draw.rect(screen, (0, 200, 0), (bar_x, bar_y, bar_width * (earth_bar / 100), bar_height))
 
 def draw_health_bar(screen, health, max_health=15):
+
     health = max(0, min(int(health), max_health))
     bar_image = pygame.image.load(f"assets/Space_Stage_Assets/sprites/spaceship/health_bar/{health}.png").convert_alpha()
     bar_image = pygame.transform.scale(bar_image, (204, 61))
     bar_x = 20
     bar_y = screen.get_height() - bar_image.get_height() - 20
+    screen.blit(bar_image, (bar_x, bar_y))
+
+def draw_base_health_bar(screen, base, camera, health, max_health=10):
+    if not base.alive:
+        return
+    base_screen_x = base.position[0] - camera.pos[0]
+    base_screen_y = base.position[1] - camera.pos[1]
+    bar_width = 300
+    bar_height = 30
+    
+    health = max(0, min(int(health), max_health))
+    bar_image = pygame.image.load(f"assets/Space_Stage_Assets/sprites/enemybase/health_bar/{health}.png").convert_alpha()
+    bar_image = pygame.transform.scale(bar_image, (bar_width, bar_height))
+    bar_x = base_screen_x
+    bar_y = base_screen_y - bar_height - 10
     screen.blit(bar_image, (bar_x, bar_y))

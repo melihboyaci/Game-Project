@@ -18,6 +18,7 @@ class EnemyBase:
         self.map_width = 2000
         self.map_height = 2000
         self.scale = 4
+        self.health = 10
         self.alive = True
         
         # Engine animasyonu
@@ -74,7 +75,7 @@ class EnemyBase:
                 self.alive = False
 
     def draw(self, surface, camera_offset):
-
+        pygame.draw.rect(surface, (255,0,0), self.get_rect().move(-camera_offset[0], -camera_offset[1]), 2)
         surface_pos = (self.position[0] - camera_offset[0], self.position[1] - camera_offset[1])
         new_size = (int(self.size[0] * self.scale), int(self.size[1] * self.scale))
         
@@ -83,6 +84,11 @@ class EnemyBase:
             destruction_image = pygame.transform.scale(destruction_image, new_size)
             destruction_image = pygame.transform.rotate(destruction_image, 90)
             surface.blit(destruction_image, surface_pos)
+            self.sprite.image = pygame.Surface((0, 0))
+            self.engine_anim.image = pygame.Surface((0, 0))
+            self.weapon_anim.image = pygame.Surface((0, 0))
+            self.shield_anim.image = pygame.Surface((0, 0))
+
             return
         
         if not self.alive:
@@ -92,7 +98,6 @@ class EnemyBase:
         image = pygame.transform.scale(image, new_size)
         image = pygame.transform.rotate(image, 90)
         surface.blit(image, surface_pos)
-
         def draw_anim(anim):
             if anim:
                 image = anim.image.copy()
@@ -105,21 +110,17 @@ class EnemyBase:
         draw_anim(self.weapon_anim)
         draw_anim(self.shield_anim)
 
+    def take_damage(self, damage):
+        # Hasar alındığında yapılacak işlemler
+        self.health -= damage
+        if self.health <= 0:
+            self.destroy()
+            self.alive = False
 
     def destroy(self):
         self.destruction = True
         self.destruction_time = pygame.time.get_ticks()
-        self.sprite.image = pygame.Surface((0, 0))  # Üssün görüntüsünü gizle
-        self.sprite.update = lambda: None  # Animasyonu durdur
-        if self.engine_anim:
-            self.engine_anim.image = pygame.Surface((0, 0))
-            self.engine_anim.update = lambda: None
-        if self.weapon_anim:
-            self.weapon_anim.image = pygame.Surface((0, 0))
-            self.weapon_anim.update = lambda: None
-        if self.shield_anim:
-            self.shield_anim.image = pygame.Surface((0, 0))
-            self.shield_anim.update = lambda: None
+        
 
     def get_rect(self):
-        return pygame.Rect(self.position[0], self.position[1], self.size[0] * self.scale, self.size[1] * self.scale)
+        return pygame.Rect(self.position[0]+30, self.position[1]+70, int(self.size[0] * 3), int(self.size[1] * 3))

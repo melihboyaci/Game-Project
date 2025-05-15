@@ -2,7 +2,7 @@ import pygame
 from utils.enemy_spaceship import EnemySpaceship
 from utils.enemybase import EnemyBase
 from utils.animation import load_sprite_sheet, AnimatedSprite
-
+ENEMY_COUNT = 0
 class EnemyManager:
     def __init__(self, camera, earth, earth_bar):
         self.camera = camera
@@ -28,9 +28,10 @@ class EnemyManager:
                 base_pos = corner
         
         self.enemy_base = EnemyBase(base_path, base_size, base_pos)
+        self.base_vulnerable = False
 
         self.enemies = []
-        self.spawn_time = 500
+        self.spawn_time = 2000
         self.last_spawn_time = pygame.time.get_ticks()
         self.wave = 1
         self.max_enemies = 10
@@ -90,12 +91,10 @@ class EnemyManager:
             )
             self.enemies.append(enemy)
             self.enemies_this_wave += 1
-    
-    
 
     def update(self, spaceship=None):
-        if not self.enemy_base.alive:
-            return
+        #if not self.enemy_base.alive:
+            #return
         self.enemy_base.update()
         now = pygame.time.get_ticks()
         if self.enemies_this_wave < self.max_enemies:
@@ -124,19 +123,11 @@ class EnemyManager:
             if enemy.get_rect().colliderect(self.earth.get_rect()):
                 enemies_to_remove.append(enemy)
                 self.earth_bar -= 10
-            if spaceship:
-                for bullet in spaceship.bullets[:]:
-                    if self.wave >= 3:
-                        if bullet.get_rect().colliderect(self.enemy_base.get_rect()):
-                            self.enemy_base.destroy()
-                            spaceship.bullets.remove(bullet)
-                            break
-                    for enemy in self.enemies:
-                        if bullet.get_rect().colliderect(enemy.get_rect()):
-                            enemy.take_damage(1)
-                            spaceship.bullets.remove(bullet)
-                            break
-                    
+            for bullet in spaceship.bullets[:]:
+                if bullet.get_rect().colliderect(enemy.get_rect()):
+                    enemy.take_damage(1)
+                    spaceship.bullets.remove(bullet)
+                    break
             #mermi oyuncu gemisi çarpışması
             if spaceship:
                 for bullet in enemy.bullets[:]:
@@ -144,16 +135,30 @@ class EnemyManager:
                         spaceship.take_damage(1)
                         enemy.bullets.remove(bullet)
                         break
+        if spaceship:
+            for bullet in spaceship.bullets[:]:
+                if self.enemy_base.alive:
+                    if self.base_vulnerable and bullet.get_rect().colliderect(self.enemy_base.get_rect()):
+                        self.enemy_base.take_damage(1)
+                        spaceship.bullets.remove(bullet)
+                        break
 
         self.enemies = [enemy for enemy in self.enemies if enemy.health >= 0 and enemy not in enemies_to_remove]
 
+         # --- DÜZELTİLMİŞ DALGA BİTİŞ KONTROLÜ ---
+        if self.wave == 2 and self.enemies_this_wave == self.max_enemies and len(self.enemies) == 0:
+            self.base_vulnerable = True
+            print("Base artık vulnerable!")  # Debug için
+        
         if len(self.enemies) == 0 and self.enemies_this_wave == self.max_enemies:
             self.wave += 1
             self.enemies_this_wave = 0
             self.last_spawn_time = now
 
     def draw(self, screen):
-        if self.enemy_base.alive:
-            self.enemy_base.draw(screen, self.camera.pos)
+        self.enemy_base.draw(screen, self.camera.pos)
         for enemy in self.enemies:
             enemy.draw(screen, self.camera.pos)
+
+    def get_enemy_count(self):
+        return len(self.enemies)
