@@ -9,7 +9,7 @@ class Player:
         self.y = y
         self.speed = 4
         self.direction = "right"  # default yön
-
+        self.is_player = True # Oyuncu karakteri
         self.animations = {
             "idle": {},
             "walk": {},
@@ -36,8 +36,8 @@ class Player:
         self.rect = self.image.get_rect(center=(self.x, self.y))
 
         # Sağlık
-        self.health = 100  # Maksimum sağlık
-        self.max_health = 100
+        self.health = 300  # Maksimum sağlık
+        self.max_health = 300
 
         
 
@@ -258,23 +258,28 @@ class Player:
 
 
     def attack(self, enemies):
-        """Saldırı mekanizması"""
+        """Daire menzilli saldırı mekanizması"""
         keys = pygame.key.get_pressed()
         if (keys[pygame.K_k] or keys[pygame.K_SPACE]):
             if not self.attack_once:  # sadece ilk basışta çalışsın
-                # Saldırı durumunu kontrol et
                 if self.state not in self.attack_damage:
                     print(f"Hata: '{self.state}' geçerli bir saldırı durumu değil.")
                     return
 
+                # Saldırı menzili seçimi (daire)
+                if self.state == "attack2":
+                    center, radius = self.get_attack2_circle()
+                else:
+                    center, radius = self.get_attack1_circle()
+
                 for enemy in enemies:
-                    if self.get_collision_rect().colliderect(enemy.get_collision_rect()):  # Çarpışma kontrolü
+                    if self.is_in_circle(center, radius, enemy.get_hitbox_rect()):
                         enemy.take_damage(self.attack_damage[self.state])
                         print(f"Enemy hasar aldı! Kalan sağlık: {enemy.health}")
-                
-                self.attack_once = True  # saldırıyı kilitle
+
+                self.attack_once = True
         else:
-            self.attack_once = False  # tuş bırakıldığında sıfırla
+            self.attack_once = False
 
     def take_damage(self, damage):
         """Hasar alma mekanizması"""
@@ -299,46 +304,18 @@ class Player:
         pygame.quit()
         exit()
 
-
-    # def get_collision_rect(self):
-    #     """Daha küçük bir çarpışma alanı döndürür."""
-    #     collision_rect = self.rect.inflate(-self.rect.width * 0.7, -self.rect.height * 0.7)  # %40 küçült
-    #     return collision_rect
-
     #çarpışma kontrolü için
     def get_collision_rect(self):
         # Daraltılmış çarpışma alanı
-        return self.rect.inflate(-self.rect.width * 0.9, -self.rect.height * 0.9)
+        return self.rect.inflate(-self.rect.width * 0.7, -self.rect.height * 0.7)
 
-    def resolve_collision(self, other):
-        """
-        Diğer objenin daraltılmış collision rect'i ile kendi daraltılmış rect'inin overlap'ini gider.
-        other: ya bir pygame.Rect ya da get_collision_rect() döndüren obje
-        """
-        # other bir obje ise onun collision rect'ini al
-        other_rect = other.get_collision_rect() if hasattr(other, 'get_collision_rect') else other
-        self_rect  = self.get_collision_rect()
 
-        if not self_rect.colliderect(other_rect):
-            return
-        # çakışan bölge
-        overlap = self_rect.clip(other_rect)
-        # en kısa eksende itiş
-        if overlap.width < overlap.height:
-            # x ekseni
-            if self_rect.centerx < other_rect.centerx:
-                self.x -= overlap.width
-            else:
-                self.x += overlap.width
-        else:
-            # y ekseni
-            if self_rect.centery < other_rect.centery:
-                self.y -= overlap.height
-            else:
-                self.y += overlap.height
-        # rect'e yansıt
-        self.rect.center = (self.x, self.y)
-
+    def draw_attack2_range(self, surface):
+        if self.state == "attack2":
+            center, radius = self.get_attack2_circle()
+            s = pygame.Surface((radius*2, radius*2), pygame.SRCALPHA)
+            pygame.draw.circle(s, (0, 0, 255, 80), (radius, radius), radius)
+            surface.blit(s, (center[0] - radius, center[1] - radius))
 
     def draw(self, surface):
         surface.blit(self.image, (self.x, self.y))
@@ -346,6 +323,7 @@ class Player:
         self.draw_cooldown_bar(surface)
         self.draw_attack_info_message(surface)
         # Sağlık barı ve cooldown barı için mesaj
+        self.draw_attack2_range(surface)
 
     def update(self):
         # Eğer 'death' durumundaysa, animasyonu tamamla ve oyunu sonlandır
@@ -389,7 +367,7 @@ class Player:
     
     def get_hitbox_rect(self):
         # Karakterin merkezinden 18 piksel uzaklıkta 36x36'lık bir kare
-        hitbox_size = 15 #orijinal 36 
+        hitbox_size = 20 #orijinal 36 
         center_x = self.x + self.rect.width // 2
         center_y = self.y + self.rect.height // 2
         return pygame.Rect(
@@ -399,6 +377,25 @@ class Player:
             hitbox_size
         )
     
+
+    def get_attack1_circle(self):
+        # Küçük menzil (ör: yarıçap 50)
+        center_x = self.x + self.rect.width // 2
+        center_y = self.y + self.rect.height // 2
+        return (center_x, center_y), 50
+
+    def get_attack2_circle(self):
+        # Büyük menzil (ör: yarıçap 60)
+        center_x = self.x + self.rect.width // 2
+        center_y = self.y + self.rect.height // 2
+        return (center_x, center_y), 60
+
+    def is_in_circle(self,center, radius, rect):
+        # Enemy'nin hitbox merkezini al
+        enemy_center = rect.center
+        dx = enemy_center[0] - center[0]
+        dy = enemy_center[1] - center[1]
+        return dx*dx + dy*dy <= radius*radius
 
     def is_within_map(self,rect):
         """Verilen rect'in harita sınırları içinde olup olmadığını kontrol eder."""

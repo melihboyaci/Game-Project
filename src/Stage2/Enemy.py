@@ -1,5 +1,6 @@
 import pygame
 import tile_assets 
+import random
 
 TILE_SIZE = 32
 
@@ -31,15 +32,15 @@ class Enemy:
         self.rect = self.image.get_rect(center=(self.x, self.y))
 
         # Sağlık
-        self.health = 50  # Düşmanın maksimum sağlığı
-        self.max_health = 50
+        self.health = 30  # Düşmanın maksimum sağlığı
+        self.max_health = 30
 
         # Enemy'nin hayatta olup olmadığını kontrol etmek için bayrak
         self.alive = True
 
         # Saldırı özellikleri:
-        self.attack_damage   = 10       # bir vuruşta ne kadar hasar
-        self.attack_cooldown = 1000     # ms cinsinden: 1 saniye bekleme
+        self.attack_damage   = 3       # bir vuruşta ne kadar hasar
+        self.attack_cooldown = 1500     # ms cinsinden: 1.5 saniye bekleme
         self.last_attack_time = 0       # en son ne zaman saldırdı
 
         # saldırı menzili, piksel cinsinden
@@ -121,11 +122,8 @@ class Enemy:
             self.state = "attack"
             self.frame_index = 0
             self.frame_timer = now
-
-            # collision kontrolünü get_collision_rect ile yap
-            if self.get_collision_rect().colliderect(player.get_collision_rect()):
-                player.take_damage(self.attack_damage)
-                print(f"Enemy vurdu! Player kalan can: {player.health}")
+            player.take_damage(self.attack_damage)
+            print(f"Enemy vurdu! Player kalan can: {player.health}")
 
             self.last_attack_time = now
 
@@ -157,28 +155,24 @@ class Enemy:
         self.direction = "right" if dx > 0 else "left"
 
         # Saldırı menzili kontrolü
-        if self.get_collision_rect().colliderect(player.get_collision_rect()):
+        center, radius = self.get_attack_circle()
+        if self.is_in_circle(center, radius, player.get_hitbox_rect()):
             self.attack(player)
         else:
             # Eğer çok yakınsa hareket etmesin
             if distance > 5:
-                # --- X ekseni için ayrı kontrol ---
-                norm = max(1, distance)
+                norm = distance or 1
                 step_x = self.speed * dx / norm
                 step_y = self.speed * dy / norm
 
-                # Çok küçük adımları sıfırla
-                if abs(step_x) < 1: step_x = 0
-                if abs(step_y) < 1: step_y = 0
+                moved = False
 
-                # X ekseni hareketi
+                # --- X ekseni ---
                 if step_x != 0:
                     next_hitbox_x = self.get_hitbox_rect().move(step_x, 0)
                     can_move_x = True
-                    #Sınır kontrolü
                     if not self.is_within_map(next_hitbox_x):
                         can_move_x = False
-                    # Diğer çarpışma kontrolleri...
                     for rect in solid_rects:
                         if next_hitbox_x.colliderect(rect):
                             can_move_x = False
@@ -192,15 +186,13 @@ class Enemy:
                                 break
                     if can_move_x:
                         self.x += step_x
+                        moved = True
 
-                # Y ekseni hareketi
                 if step_y != 0:
                     next_hitbox_y = self.get_hitbox_rect().move(0, step_y)
                     can_move_y = True
-                    #Sınır kontrolü
                     if not self.is_within_map(next_hitbox_y):
-                        can_move_x = False
-                    # Diğer çarpışma kontrolleri...
+                        can_move_y = False
                     for rect in solid_rects:
                         if next_hitbox_y.colliderect(rect):
                             can_move_y = False
@@ -214,50 +206,48 @@ class Enemy:
                                 break
                     if can_move_y:
                         self.y += step_y
+                        moved = True
 
-                if (step_x != 0 and can_move_x) or (step_y != 0 and can_move_y):
-                    self.state = "walk"
-                else:
-                    self.state = "idle"
+                # Eğer X veya Y'de hareket olduysa state'i walk yap
+                self.state = "walk" if moved else "idle"
+
+                # Eğer hareket edemediyse ve başka bir enemy ile çakışıyorsa küçük bir itme uygula
+                if not moved:
+                    for other in all_characters:
+                        if other is self:
+                            continue
+                        # Player'ı itme!
+                        if hasattr(other, "is_player") and other.is_player:
+                            continue
+                        if self.get_hitbox_rect().colliderect(other.get_hitbox_rect()):
+                            self.x += random.choice([-1, 1])
+                            self.y += random.choice([-1, 1])
+                            # Yeni pozisyonun hitbox'unu oluştur
+                            new_hitbox = self.get_hitbox_rect().move(dx, dy)
+                            # Hem harita sınırı hem de solid kontrolü
+                            if self.is_within_map(new_hitbox) and not any(new_hitbox.colliderect(r) for r in solid_rects):
+                                player_hitbox = player.get_hitbox_rect()
+                                if not new_hitbox.colliderect(player_hitbox):
+                                    self.x += dx
+                                    self.y += dy
+                                    self.state = "walk"
+                            break
             else:
                 self.state = "idle"
 
         self.rect.center = (self.x, self.y)
         self.update_animation()
 
+        # # --- Çarpışma çözümü ---
+        # for other in all_characters:
+        #     if other is not self and self.get_collision_rect().colliderect(other.get_collision_rect()):
+        #         self.resolve_collision(other)
+
     # Çarpışma kontrolü
     def get_collision_rect(self):
         # Daraltılmış çarpışma alanı
         return self.rect.inflate(-self.rect.width * 0.9, -self.rect.height * 0.9)
 
-    def resolve_collision(self, other):
-        """
-        Diğer objenin daraltılmış collision rect'i ile kendi daraltılmış rect'inin overlap'ini gider.
-        other: ya bir pygame.Rect ya da get_collision_rect() döndüren obje
-        """
-        # other bir obje ise onun collision rect'ini al
-        other_rect = other.get_collision_rect() if hasattr(other, 'get_collision_rect') else other
-        self_rect  = self.get_collision_rect()
-
-        if not self_rect.colliderect(other_rect):
-            return
-        # çakışan bölge
-        overlap = self_rect.clip(other_rect)
-        # en kısa eksende itiş
-        if overlap.width < overlap.height:
-            # x ekseni
-            if self_rect.centerx < other_rect.centerx:
-                self.x -= overlap.width
-            else:
-                self.x += overlap.width
-        else:
-            # y ekseni
-            if self_rect.centery < other_rect.centery:
-                self.y -= overlap.height
-            else:
-                self.y += overlap.height
-        # rect'e yansıt
-        self.rect.center = (self.x, self.y)
 
     def update_animation(self):
         now = pygame.time.get_ticks()
@@ -298,7 +288,7 @@ class Enemy:
     
     def get_hitbox_rect(self):
         # Karakterin merkezinden 18 piksel uzaklıkta 36x36'lık bir kare
-        hitbox_size = 15 #orijinal 36 
+        hitbox_size = 20 #orijinal 36 
         center_x = self.x + self.rect.width // 2
         center_y = self.y + self.rect.height // 2
         return pygame.Rect(
@@ -308,6 +298,17 @@ class Enemy:
             hitbox_size
         )
     
+    def get_attack_circle(self):
+        # Enemy'nin merkezinden 40 piksel yarıçaplı bir daire
+        center_x = self.x + self.rect.width // 2
+        center_y = self.y + self.rect.height // 2
+        return (center_x, center_y), 40  # Daire merkezi ve yarıçapı
+
+    def is_in_circle(self, center, radius, other_rect):
+        ox, oy = other_rect.center
+        dx = ox - center[0]
+        dy = oy - center[1]
+        return dx*dx + dy*dy <= radius*radius
 
     def is_within_map(self,rect):
         """Verilen rect'in harita sınırları içinde olup olmadığını kontrol eder."""
