@@ -23,7 +23,7 @@ class Spaceship:
         self.explosion_frames = load_sprite_sheet("assets/Space_Stage_Assets/sprites/spaceship/explosion.png", 64, 64)
         self.explosion_sprite = AnimatedSprite(self.explosion_frames, position, frame_delay=80)
         self.explosion_time = 0 
-        self.explosion_duration = 732  
+        self.explosion_duration = 700
 
 
         if gun_path:
@@ -56,7 +56,7 @@ class Spaceship:
             self.explosion_sprite.pos = tuple(self.position)
             self.explosion_sprite.update()
             sound = pygame.mixer.Sound("assets/Space_Stage_Assets/sounds/explosion.wav")
-            sound.set_volume(0.5)
+            sound.set_volume(0.3)
             sound.play()
 
             if pygame.time.get_ticks() - self.explosion_time > self.explosion_duration:
@@ -109,6 +109,8 @@ class Spaceship:
             self.active_engine.update()
 
     def die(self):
+        if self.exploding:
+            return
         self.exploding = True
         self.explosion_time = pygame.time.get_ticks()
         self.sprite.update = lambda: None  # Güncellemeyi durdur
@@ -190,6 +192,8 @@ class Spaceship:
     
     def take_damage(self, damage):
         # Hasar alındığında yapılacak işlemler
+        if self.health <= 0 or self.exploding:
+            return
         self.health -= damage
         if self.health > 11:
             pass

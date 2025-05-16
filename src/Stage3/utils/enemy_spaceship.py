@@ -84,7 +84,7 @@ class EnemySpaceship:
         player_distance = math.hypot(player_dx, player_dy) if spaceship else float('inf')
 
         # Torpedo ise: oyuncuya yakınsa ona yönel ve ateş et, değilse dünyaya yönel
-        if self.enemy_type == "torpedo" and spaceship:
+        if self.enemy_type == "torpedo" and spaceship and spaceship.health > 0:
             if player_distance < earth_distance and player_distance < self.see_distance:
                 # Oyuncuya yönel ve ateş et
                 angle = math.atan2(player_dy, player_dx)

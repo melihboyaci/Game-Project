@@ -122,7 +122,8 @@ class EnemyManager:
                     break
             if enemy.get_rect().colliderect(self.earth.get_rect()):
                 enemies_to_remove.append(enemy)
-                self.earth_bar -= 10
+                self.earth.health -= 100
+                self.earth_bar -= 100
             for bullet in spaceship.bullets[:]:
                 if bullet.get_rect().colliderect(enemy.get_rect()):
                     enemy.take_damage(1)

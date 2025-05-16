@@ -5,6 +5,7 @@ from .utils.spaceship import Spaceship
 from .utils.camera import Camera
 from .managers.enemy_manager import EnemyManager
 from .managers.planet_manager import PlanetManager
+from .utils.earth import Earth
 
 class game_loop:
     def __init__(self, screen, clock):
@@ -17,14 +18,15 @@ class game_loop:
         self.bg_image = pygame.transform.scale(self.bg_image, (self.width, self.height))
         self.map_width = 2000
         self.map_height = 2000
+        
         self.earth_bar = 100
         self.last_enemy_spawn_time = pygame.time.get_ticks()
         self.last_enemy_spawn = pygame.time.get_ticks()
         
         self.camera = Camera(self.width, self.height, self.map_width, self.map_height)
-
+        
         # Dünya
-        self.earth = Planet(
+        self.earth = Earth(
             image_path="assets/Space_Stage_Assets/sprites/planets/earth2.png",
             size=(300, 300),
             position=(
@@ -34,21 +36,10 @@ class game_loop:
             scale=(1.5)
         )
 
-        self.planet1 = Planet(
-            image_path="assets/Space_Stage_Assets/sprites/planets/planet2.png",
-            size=(100, 100),
-            position=(
-                random.randint(0, self.map_width - 100),
-                random.randint(0, self.map_height - 100)
-            ),
-            scale=(1)
-        )
-
         self.planet_manager = PlanetManager()
-        self.planet_manager
-        self.planet_manager.add_planet(self.earth)
+        #self.planet_manager.add_planet(self.earth)
         
-        self.enemy_manager = EnemyManager(self.camera, self.earth, self.earth_bar)
+        self.enemy_manager = EnemyManager(self.camera, self.earth, self.earth.health)
 
 
         self.spaceship_path = "assets/Space_Stage_Assets/sprites/spaceship/main_ship/full_health.png"
@@ -99,8 +90,10 @@ class game_loop:
             draw_scrolling_bg(self.screen, self.bg_image, self.bg_offset, self.bg_speed)
             
 
-            self.planet_manager.update()
-            self.planet_manager.draw(self.screen, self.camera.pos)
+            #self.planet_manager.update()
+            #self.planet_manager.draw(self.screen, self.camera.pos)
+            self.earth.update()
+            self.earth.draw(self.screen, self.camera.pos)
 
             self.camera.update(self.spaceship.position, self.spaceship.size)
             self.spaceship.update(pygame.key.get_pressed())
@@ -112,7 +105,13 @@ class game_loop:
             draw_health_bar(self.screen, self.spaceship.health)
             if self.enemy_manager.base_vulnerable and self.enemy_manager.enemy_base.alive:
                 draw_base_health_bar(self.screen, self.enemy_manager.enemy_base, self.camera, self.enemy_manager.enemy_base.health)            
-            
+            if self.earth.destroyed:
+                wait_time = 1000
+                if pygame.time.get_ticks() - self.earth.explosion_time > wait_time:
+                    running = False
+                    # Burada oyunun bitiş ekranını göster
+                    # Örneğin, bir fonksiyon çağırabilirsiniz
+                    # game_over_screen(self.screen)
             pygame.display.flip() #ekran güncelle
 
             self.clock.tick(60) # FPS ayarla
