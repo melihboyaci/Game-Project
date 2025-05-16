@@ -7,6 +7,11 @@ class Player:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
+
+        self.can_control = False  # Başta kontrol edilemez
+        self.auto_walk = False
+
         self.speed = 4
         self.direction = "right"  # default yön
         self.is_player = True # Oyuncu karakteri
@@ -396,6 +401,24 @@ class Player:
         dx = enemy_center[0] - center[0]
         dy = enemy_center[1] - center[1]
         return dx*dx + dy*dy <= radius*radius
+
+    def auto_walk_forward(self, distance=64):
+        """Player'ı sağa doğru distance kadar otomatik yürüt."""
+        if not hasattr(self, "_auto_walk_start_x"):
+            self._auto_walk_start_x = self.x
+        walk_speed = 2    
+        if self.x < self._auto_walk_start_x + distance:
+            self.x += walk_speed
+            self.state = "walk"
+            self.direction = "right"
+            self.rect.center = (self.x, self.y)
+            self.update_animation()
+            return False  # Hala yürüyor
+        else:
+            self.auto_walk = False
+            self.can_control = True
+            del self._auto_walk_start_x
+            return True   # Yürüyüş bitti
 
     def is_within_map(self,rect):
         """Verilen rect'in harita sınırları içinde olup olmadığını kontrol eder."""

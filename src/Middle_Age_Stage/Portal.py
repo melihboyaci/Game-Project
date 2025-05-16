@@ -10,9 +10,9 @@ class Portal:
 
         # Animasyon yolları ve frame boyutları burada!
         self.anim_paths = {
-            "open":  ("assets/portal_open.png", 64, 64),
-            "idle":  ("assets/portal_idle.png", 64, 64),
-            "close": ("assets/portal_close.png", 64, 64)
+            "open":  ("assets/portal_assets/Green_Portal_open.png", 64, 64),
+            "idle":  ("assets/portal_assets/Green_Portal_idle.png", 64, 64),
+            "close": ("assets/portal_assets/Green_Portal_close.png", 64, 64)
         }
 
         self.animations = {}
@@ -45,7 +45,7 @@ class Portal:
                     self.state = "idle"
                     self.frame_index = 0
                 elif self.state == "idle":
-                    self.state = "close"
+                    # SÜREKLİ idle'da döngüye girsin, dışarıdan state değişene kadar
                     self.frame_index = 0
                 elif self.state == "close":
                     self.finished = True
@@ -54,3 +54,9 @@ class Portal:
     def draw(self, surface):
         img = self.animations[self.state][self.frame_index]
         surface.blit(img, (self.x, self.y))
+
+
+    def draw_flipped(self, surface):
+        img = self.animations[self.state][self.frame_index]
+        img_flipped = pygame.transform.flip(img, True, False)
+        surface.blit(img_flipped, (self.x, self.y))    
