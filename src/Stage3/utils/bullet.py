@@ -1,5 +1,5 @@
 import pygame
-from utils.animation import AnimatedSprite, load_sprite_sheet
+from .animation import AnimatedSprite, load_sprite_sheet
 
 class Bullet:
     def __init__(self, image_path, size, position, speed=5):

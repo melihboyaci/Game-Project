@@ -1,6 +1,6 @@
 import pygame
-from utils.animation import AnimatedSprite, load_sprite_sheet
-from utils.bullet import Bullet
+from ..utils.animation import AnimatedSprite, load_sprite_sheet
+from ..utils.bullet import Bullet
 import random
 import math
 

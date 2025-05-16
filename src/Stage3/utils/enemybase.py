@@ -1,5 +1,5 @@
 import pygame
-from utils.animation import AnimatedSprite, load_sprite_sheet
+from ..utils.animation import AnimatedSprite, load_sprite_sheet
 
 class EnemyBase:
     def __init__(self, image_path, size, position, engine_path=None, engine_size=None,

@@ -1,5 +1,5 @@
 import pygame
-from utils.planet import Planet
+from ..utils.planet import Planet
 
 class PlanetManager:
     def __init__(self):

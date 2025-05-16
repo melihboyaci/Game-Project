@@ -1,10 +1,10 @@
 import pygame, random
-from utils.planet import Planet
-from utils.views import draw_scrolling_bg, draw_earth_bar, draw_health_bar, draw_base_health_bar
-from utils.spaceship import Spaceship
-from utils.camera import Camera
-from managers.enemy_manager import EnemyManager
-from managers.planet_manager import PlanetManager
+from .utils.planet import Planet
+from .utils.views import draw_scrolling_bg, draw_earth_bar, draw_health_bar, draw_base_health_bar
+from .utils.spaceship import Spaceship
+from .utils.camera import Camera
+from .managers.enemy_manager import EnemyManager
+from .managers.planet_manager import PlanetManager
 
 class game_loop:
     def __init__(self, screen, clock):
