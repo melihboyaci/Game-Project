@@ -119,6 +119,9 @@ class Player:
             self.animations[state]["left"]  = [pygame.transform.flip(f, True, False) for f in base_frames]
 
     def handle_input(self, solid_rects, all_characters):
+        if self.state == "death":
+            return  # input handle yok, karakter kontrol edilemez
+
         TILE_SIZE = 32
         if self.state == "hurt" and pygame.time.get_ticks() - self.hurt_timer < 300:
             return
@@ -213,20 +216,20 @@ class Player:
         now = pygame.time.get_ticks()
         if now - self.frame_timer > self.frame_speed:
             self.frame_timer = now
-            self.frame_index += 1
+            if self.state != "death" or self.frame_index < len(self.animations[self.state][self.direction]) - 1:
+                self.frame_index += 1
 
             # Eğer animasyonun son karesine ulaşıldıysa
             if self.frame_index >= len(self.animations[self.state][self.direction]):
                 if self.state == "hurt":
-                    self.state = "idle"  # Hasar alma animasyonu bittiğinde 'idle' durumuna geç
+                    self.state = "idle"
+                    self.frame_index = 0
                 elif self.state.startswith("attack"):
-                    self.state = "idle"  # Saldırı animasyonu bittiğinde 'idle' durumuna geç
-                elif self.state == "death":
-                    self.frame_index = len(self.animations["death"][self.direction]) - 1  # Ölüm animasyonunda son karede kal
-                    return
-                self.frame_index = 0  # Animasyonu sıfırla
+                    self.state = "idle"
+                    self.frame_index = 0
+                elif self.state != "death":
+                    self.frame_index = len(self.animations[self.state][self.direction]) - 1
 
-            # Geçerli animasyon karesini güncelle
             self.image = self.animations[self.state][self.direction][self.frame_index]
 
     def draw_health_bar(self, surface):
@@ -306,8 +309,6 @@ class Player:
     def die(self):
         """Player öldüğünde yapılacak işlemler"""
         print("Player öldü! Oyun bitti.")
-        pygame.quit()
-        exit()
 
     #çarpışma kontrolü için
     def get_collision_rect(self):
@@ -333,13 +334,8 @@ class Player:
     def update(self):
         # Eğer 'death' durumundaysa, animasyonu tamamla ve oyunu sonlandır
         if self.state == "death":
-            if self.frame_index >= len(self.animations["death"][self.direction]) - 1:
-                print("Player öldü! Oyun sonlandırılıyor.")
-                pygame.quit()
-                exit()
-            else:
-                self.update_animation()
-                return
+            self.update_animation()
+            return
 
         # Eğer 'hurt' durumundaysa, başka bir duruma geçme
         if self.state == "hurt":

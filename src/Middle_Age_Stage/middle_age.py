@@ -89,7 +89,7 @@ clock = pygame.time.Clock()
 running = True
 
 # Başlangıç Enemy spawn
-for _ in range(MAX_ACTIVE_ENEMY):
+for _ in range(MAX_ACTIVE_ENEMY-5):
     pos = get_random_walkable_position()
     if pos:
         x, y = pos
@@ -99,7 +99,7 @@ total_spawned = len(enemies)
 
 
 killed_enemies = 0
-TARGET_KILL = 2
+TARGET_KILL = 50
 
 portal_wait_timer = None
 PORTAL_WAIT_DURATION = 1000  # ms
@@ -110,6 +110,10 @@ all_characters = enemies  # Tüm karakterleri bir listeye ekle
 
 game_over = False
 continue_button_rect = pygame.Rect(tile_assets.screen.get_width() // 2 - 80, tile_assets.screen.get_height() // 2 + 40, 160, 50)
+
+death_menu_active = False
+death_menu_options = ["Yeniden Dene", "Çıkış"]
+selected_option = 0
 
 while running:
     dt = clock.tick(60)
@@ -126,7 +130,48 @@ while running:
                 # Burada başka bir oyuna geçiş fonksiyonu çağırabilirsin
                 running = False
 
-    if not game_over:
+        if death_menu_active:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    selected_option = (selected_option - 1) % len(death_menu_options)
+                elif event.key == pygame.K_DOWN:
+                    selected_option = (selected_option + 1) % len(death_menu_options)
+                elif event.key == pygame.K_RETURN:
+                    if death_menu_options[selected_option] == "Yeniden Dene":
+                        # Oyunu sıfırlama işlemi
+                        player = Player.Player(player_start_x, player_start_y)
+                        portal = Portal.Portal(player_start_x + player.rect.width // 4, player_start_y + (player.rect.height // 4)-20, scale_factor=2)
+                        enemies = []
+                        for _ in range(MAX_ACTIVE_ENEMY-5):
+                            pos = get_random_walkable_position()
+                            if pos:
+                                x, y = pos
+                                enemies.append(Enemy.Enemy(x * TILE_SIZE, y * TILE_SIZE))
+                        total_spawned = len(enemies)
+                        killed_enemies = 0
+                        end_portal_active = False
+                        end_portal = None
+                        player_visible = True
+                        player_in_end_portal = False
+                        game_over = False
+                        death_menu_active = False
+                        selected_option = 0
+                        player.auto_walk = True
+                        portal_wait_timer = None
+                        end_portal_idle_timer = None
+                        last_spawn_time = pygame.time.get_ticks()
+
+                    elif death_menu_options[selected_option] == "Çıkış":
+                        pygame.quit()
+                        exit()
+        
+    if not game_over and not death_menu_active:
+
+        if player.state == "death":
+             # Ölüm animasyonu bittiyse menüyü aç
+            if player.frame_index >= len(player.animations["death"][player.direction]) - 1:
+                death_menu_active = True   
+
         # --- Oyun güncellemeleri ---
         if not end_portal_active and killed_enemies >= TARGET_KILL:
             end_portal = Portal.Portal(end_portal_x, end_portal_y, scale_factor=2)
@@ -248,6 +293,24 @@ while running:
         btn_text = font_btn.render("Devam Et", True, (255, 255, 255))
         tile_assets.screen.blit(btn_text, (continue_button_rect.centerx - btn_text.get_width() // 2, continue_button_rect.centery - btn_text.get_height() // 2))
      
+
+    if death_menu_active:
+        # Saydam overlay
+        overlay = pygame.Surface(tile_assets.screen.get_size(), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180))
+        tile_assets.screen.blit(overlay, (0, 0))
+
+        font_big = pygame.font.Font(None, 64)
+        death_text = font_big.render("Öldün!", True, (255, 0, 0))
+        tile_assets.screen.blit(death_text, (tile_assets.screen.get_width() // 2 - death_text.get_width() // 2, tile_assets.screen.get_height() // 2 - 100))
+
+        font_opt = pygame.font.Font(None, 48)
+        for i, option in enumerate(death_menu_options):
+            color = (255, 255, 0) if i == selected_option else (255, 255, 255)
+            option_text = font_opt.render(option, True, color)
+            tile_assets.screen.blit(option_text, (tile_assets.screen.get_width() // 2 - option_text.get_width() // 2, tile_assets.screen.get_height() // 2 + i * 60))
+
+
     pygame.display.update()
 
 pygame.quit()
