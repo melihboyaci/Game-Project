@@ -19,8 +19,9 @@ class Enemy:
             "hurt": {},  # Hasar alma animasyonu
             "death": {}  # Ölüm animasyonu
         }
-        self.hurt_sound=pygame.mixer.Sound("assets\Middle_Age_Assets\sounds\orc-hurt.mp3")
 
+        self.hurt_sound=pygame.mixer.Sound("assets\Middle_Age_Assets\sounds\orc-hurt.mp3")
+        self.orc_axe_sound=pygame.mixer.Sound("assets/Middle_Age_Assets/sounds/axe-slash.mp3")
 
         self.load_animations()
         self.state = "idle"
@@ -30,6 +31,7 @@ class Enemy:
         self.frame_speed = 100  # ms başına frame değişim hızı
         self.image = self.animations["idle"]["right"][0]
         self.rect = self.image.get_rect(center=(self.x, self.y))
+        self.last_taken_damage_time = 0
 
         # Sağlık
         self.health = 30  # Düşmanın maksimum sağlığı
@@ -87,6 +89,10 @@ class Enemy:
             self.animations[state]["left"]  = [pygame.transform.flip(f, True, False) for f in base_frames]
 
     def take_damage(self, damage):
+        now = pygame.time.get_ticks()
+        if now - self.last_taken_damage_time < 370:  # 370 milisaniye içinde tekrar hasar almaz
+            return
+        self.last_taken_damage_time = now
         self.hurt_sound.play()  # Hasar alma sesi çal
         self.health -= damage
         self.state = "hurt"
@@ -119,6 +125,7 @@ class Enemy:
         # sadece cooldown geçmişse vur
         if now - self.last_attack_time >= self.attack_cooldown:
             # vurma animasyonuna geç
+            self.orc_axe_sound.play()
             self.state = "attack"
             self.frame_index = 0
             self.frame_timer = now
@@ -262,8 +269,9 @@ class Enemy:
                 elif self.state == "death":
                     self.frame_index = len(self.animations["death"][self.direction]) - 1  # Ölüm animasyonunda son karede kal
                     return
-                self.frame_index = 0  # Animasyonu sıfırla
-
+                elif self.state == "attack":
+                    self.state = "idle"  # Saldırı animasyonu bittiğinde 'idle' durumuna geç
+                self.frame_index = 0  # Animasyonu sıfırla   
             # Geçerli animasyon karesini güncelle
             self.image = self.animations[self.state][self.direction][self.frame_index]
 
