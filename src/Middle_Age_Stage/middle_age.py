@@ -58,8 +58,6 @@ total_spawned = len(enemies)
 player = Player.Player(100, 100)
 clock = pygame.time.Clock()
 running = True
-# enemies = [Enemy.Enemy(300, 100), Enemy.Enemy(500, 200), Enemy.Enemy(500, 250 )]  # Enemy nesneleri listesi
-
 
 # Başlangıç Enemy spawn
 for _ in range(MAX_ACTIVE_ENEMY):
@@ -70,8 +68,13 @@ for _ in range(MAX_ACTIVE_ENEMY):
 
 total_spawned = len(enemies)
 
+
+killed_enemies = 0
+TARGET_KILL = 100
+
 solid_rects = tile_assets.create_solid_rects()  # Yürünemez alanları oluştur
 all_characters = enemies  # Tüm karakterleri bir listeye ekle
+
 while running:
     dt = clock.tick(60)
     now = pygame.time.get_ticks()
@@ -79,6 +82,10 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+
+    if killed_enemies >= TARGET_KILL:
+        print("Tebrikler! 200 düşman öldürdünüz.")
+        running = False
 
     # --- Otomatik düşman spawn kontrolü ---
     if len(enemies) < MAX_ACTIVE_ENEMY and total_spawned < MAX_TOTAL_ENEMY and now - last_spawn_time > SPAWN_INTERVAL:
@@ -98,6 +105,7 @@ while running:
     for enemy in enemies[:]:
         if not enemy.alive:
             enemies.remove(enemy)
+            killed_enemies += 1
         else:
             # Kendisi dışındaki tüm düşmanları topla
             other_enemies = [e for e in enemies if e is not enemy]
@@ -112,6 +120,10 @@ while running:
     
     for enemy in enemies:
         enemy.draw(tile_assets.screen)
+
+    font = pygame.font.Font(None, 36)   
+    text = font.render(f"{killed_enemies}/{TARGET_KILL}", True, (255, 255, 255))
+    tile_assets.screen.blit(text, (tile_assets.screen.get_width() // 2 - 40, 20))
 
     pygame.display.update()
    
