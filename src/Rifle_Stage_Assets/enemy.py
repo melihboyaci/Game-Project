@@ -129,22 +129,23 @@ class Enemy(Player):
     def take_damage(self, damage):
         """Düşman hasar aldığında çağrılır"""
         current_time = pygame.time.get_ticks()
+        # --- CAN AZALTMA ---
+        self.health = max(0, self.health - damage)  # Can 0'ın altına düşmesin
+        print(f"Düşman hasar aldı! Alınan hasar: {damage} | Kalan can: {self.health}")
+        if self.health <= 0:
+            self.dead = True
+            self.death_frame = 0
+            self.death_timer = 0
+            self.firing = False
+            self.moving = False
+            self.reloading = False
+            return True
+        # --- ANİMASYON ---
         if current_time - self.last_damage_time > self.damaged_duration:
-            self.health = max(0, self.health - damage)  # Can 0'ın altına düşmesin
-            print(f"Düşman hasar aldı! Alınan hasar: {damage} | Kalan can: {self.health}")
             self.damaged = True
             self.damaged_frame = 0
             self.damaged_timer = 0
             self.last_damage_time = current_time
-            if self.health <= 0:
-                self.dead = True
-                self.death_frame = 0
-                self.death_timer = 0
-                self.firing = False
-                self.moving = False
-                self.reloading = False
-                return True
-            return False
         return False
 
     def update(self, player, blocks):

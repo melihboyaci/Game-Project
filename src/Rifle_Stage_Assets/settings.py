@@ -18,6 +18,7 @@ PLAYER_BULLET_SPEED = 5  # Oyuncu mermisinin hızı
 PLAYER_HEALTH = 500  # Oyuncunun başlangıç canı
 PLAYER_DAMAGE = 50  # Oyuncunun her mermide verdiği hasar
 PLAYER_HEADSHOT_DAMAGE = 100  # Oyuncunun başarılı bir başörtüsünde verdiği hasar
+PLAYER_ULTI_COUNTER = 5  # Oyuncunun ulti sayacı
 
 # Enemy settings
 ENEMY_SPEED = 1

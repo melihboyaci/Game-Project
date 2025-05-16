@@ -2,7 +2,7 @@ import pygame
 from settings import (
     PLAYER_FIRE_COOLDOWN, PLAYER_HEALTH, DEATH_ANIMATION_SPEED,
     SPRITE_SCALE, BULLET_MAX_DISTANCE, 
-    PLAYER_BULLET_SPEED, PLAYER_BULLETS
+    PLAYER_BULLET_SPEED, PLAYER_BULLETS, PLAYER_ULTI_COUNTER
 )
 
 class Player(pygame.sprite.Sprite):
@@ -129,6 +129,18 @@ class Player(pygame.sprite.Sprite):
         self.death_animation_finished = False
         self.death_animation_speed = DEATH_ANIMATION_SPEED
 
+        # Ulti için değişkenler
+        self.ulti_active = False
+        self.ulti_bullets_left = 0
+        self.ulti_timer = 0
+        self.ulti_cooldown = 2000  # 2 saniye cooldown (ms)
+        self.last_ulti_time = 0
+        self.ulti_fire_interval = 60  # ms arayla mermi
+        # Ulti sayaç
+        self.ulti_counter = PLAYER_ULTI_COUNTER  # saniye
+        self.ulti_ready = False
+        self.ulti_last_tick = pygame.time.get_ticks()
+
     def take_damage(self, damage):
         """Oyuncu hasar aldığında çağrılır"""
         current_time = pygame.time.get_ticks()
@@ -152,6 +164,15 @@ class Player(pygame.sprite.Sprite):
 
     def update(self, keys, screen_width, screen_height):
         self.bullet_sprites.update()  # Mermiler her durumda sadece bir kez güncellenir
+        # Ulti sayaç güncelle
+        current_time = pygame.time.get_ticks()
+        if not self.ulti_ready:
+            if current_time - self.ulti_last_tick >= 1000:
+                self.ulti_counter -= 1
+                self.ulti_last_tick = current_time
+                if self.ulti_counter <= 0:
+                    self.ulti_counter = 0
+                    self.ulti_ready = True
         # Öncelikle ölüm animasyonu kontrolü
         if self.dead:
             self.death_timer += self.death_animation_speed
@@ -201,7 +222,61 @@ class Player(pygame.sprite.Sprite):
 
         # Fire animasyonu başlat (mermi varsa ve cooldown geçtiyse)
         current_time = pygame.time.get_ticks()
-        if keys[pygame.K_SPACE] and not self.firing and not self.reloading and (current_time - self.last_fire_time > self.fire_cooldown):
+        # --- ULTI ---
+        if keys[pygame.K_t] and not self.ulti_active and self.ulti_ready:
+            self.ulti_active = True
+            self.ulti_bullets_left = 6
+            self.ulti_timer = 0
+            self.last_ulti_time = current_time
+            self.ulti_ready = False
+            self.ulti_counter = PLAYER_ULTI_COUNTER
+            self.ulti_last_tick = current_time
+
+        if self.ulti_active:
+            if self.ulti_bullets_left > 0:
+                if current_time - self.ulti_timer > self.ulti_fire_interval:
+                    self.ulti_timer = current_time
+                    self.ulti_bullets_left -= 1
+                    # Mermi ateşle
+                    from objects import Bullet
+                    if self.facing_right:
+                        start_pos = (self.rect.left + 26*SPRITE_SCALE, self.rect.top + 18*SPRITE_SCALE)
+                        step = 1
+                    else:
+                        start_pos = (self.rect.left -10*SPRITE_SCALE, self.rect.top + 18*SPRITE_SCALE)
+                        step = -1
+                    max_length = BULLET_MAX_DISTANCE
+                    end_pos = (start_pos[0] + step * max_length, start_pos[1])
+                    if hasattr(self, 'blocks_for_bullet') and self.blocks_for_bullet is not None:
+                        for i in range(max_length):
+                            test_x = int(start_pos[0] + step * i)
+                            test_y = int(start_pos[1])
+                            for block in self.blocks_for_bullet:
+                                if block.collidable and block.rect.collidepoint(test_x, test_y):
+                                    end_pos = (test_x, test_y)
+                                    break
+                            else:
+                                continue
+                            break
+                    self.bullet_sprites.add(Bullet(start_pos, end_pos, PLAYER_BULLET_SPEED))
+                    # Sesi ilk ateş anında yükle ve çal
+                    if self.ulti_active:
+                        if self.ulti_bullets_left == 5:
+                            pygame.mixer.Sound('assets/Rifle_Stage_Assets/sounds/ak_ultimate.wav').play()
+                    else:
+                        if Player.FIRE_SOUND is None:
+                            Player.FIRE_SOUND = pygame.mixer.Sound('assets/Rifle_Stage_Assets/sounds/ak_ultimate.wav')
+                        Player.FIRE_SOUND.play()
+                    # --- Ateş animasyonu başlat ---
+                    self.firing = True
+                    self.fire_frame = 0
+                    self.fire_timer = 0
+            else:
+                self.ulti_active = False
+        # --- ULTI SONU ---
+
+        # Normal ateş (ulti aktif değilse)
+        if keys[pygame.K_SPACE] and not self.firing and not self.reloading and not self.ulti_active and (current_time - self.last_fire_time > self.fire_cooldown):
             self.firing = True
             self.fire_frame = 0
             self.fire_timer = 0
@@ -252,18 +327,27 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.image = self.frames_fire_left[min(self.fire_frame, self.num_frames_fire-1)]
         else:
-            if self.moving:
+            if self.ulti_active:
+                # Ulti sırasında ateş animasyonu son karesinde kalsın
+                if self.facing_right:
+                    self.image = self.frames_fire_right[min(self.fire_frame, self.num_frames_fire-1)]
+                else:
+                    self.image = self.frames_fire_left[min(self.fire_frame, self.num_frames_fire-1)]
+            elif self.moving:
                 self.frame_timer += self.animation_speed
                 if self.frame_timer >= 1:
                     self.current_frame = (self.current_frame + 1) % self.num_frames_run
                     self.frame_timer = 0
+                if self.facing_right:
+                    self.image = self.frames_run_right[self.current_frame]
+                else:
+                    self.image = self.frames_run_left[self.current_frame]
             else:
                 self.current_frame = 0  # Duran kare
-
-            if self.facing_right:
-                self.image = self.frames_run_right[self.current_frame]
-            else:
-                self.image = self.frames_run_left[self.current_frame]
+                if self.facing_right:
+                    self.image = self.frames_run_right[self.current_frame]
+                else:
+                    self.image = self.frames_run_left[self.current_frame]
 
         ### Reload ###
         # Reload animasyonu başlat (R tuşu ile, şu anda ateş edilmiyorsa ve reload edilmiyorsa)

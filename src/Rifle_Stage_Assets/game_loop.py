@@ -21,6 +21,7 @@ def start_game():
         bullet_icon = pygame.image.load("assets/Rifle_Stage_Assets/images/bullet_icon.png")
         hp_icon = pygame.image.load("assets/Rifle_Stage_Assets/images/hp_icon.png")
         enemy_icon = pygame.image.load("assets/Rifle_Stage_Assets/images/enemy_icon.png")
+        ultimate_icon = pygame.image.load("assets/Rifle_Stage_Assets/images/ultimate_icon.png")
         font = pygame.font.SysFont(None, 36)
 
         background = Background()
@@ -28,11 +29,11 @@ def start_game():
         enemy_manager = EnemyManager(num_enemies=ENEMY_COUNT, min_distance=ENEMY_MIN_DISTANCE)
         enemy_manager.spawn_enemies(background.get_blocks())
 
-        result = game_loop(screen, background, player, enemy_manager, font, bullet_icon, hp_icon, enemy_icon, FPS)
+        result = game_loop(screen, background, player, enemy_manager, font, bullet_icon, hp_icon, enemy_icon, ultimate_icon, FPS)
         if result == 'quit':
             break
 
-def game_loop(screen, background, player, enemy_manager, font, bullet_icon, hp_icon, enemy_icon, FPS):
+def game_loop(screen, background, player, enemy_manager, font, bullet_icon, hp_icon, enemy_icon, ultimate_icon, FPS):
     clock = pygame.time.Clock()
     running = True
     while running:
@@ -69,7 +70,7 @@ def game_loop(screen, background, player, enemy_manager, font, bullet_icon, hp_i
         background.draw(screen)
         player.draw(screen, background.get_blocks())
         enemy_manager.draw(screen, background.get_blocks())
-        draw_ui(screen, player, enemy_manager, bullet_icon, hp_icon, enemy_icon, font)
+        draw_ui(screen, player, enemy_manager, bullet_icon, hp_icon, enemy_icon, ultimate_icon, font)
         pygame.display.flip()
         clock.tick(FPS)
     pygame.quit() 
