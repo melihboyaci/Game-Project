@@ -129,3 +129,59 @@ class Ruin3(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
         self.rect = self.image.get_rect(topleft=(x, y))
         self.collidable = True
+
+class Portal(pygame.sprite.Sprite):
+    def __init__(self, x, y, scale=2, on_finish=None):
+        super().__init__()
+        self.frames_open = self.load_frames('assets/portal_assets/Green_Portal_open.png', scale)
+        self.frames_idle = self.load_frames('assets/portal_assets/Green_Portal_idle.png', scale)
+        self.frames_close = self.load_frames('assets/portal_assets/Green_Portal_close.png', scale)
+        self.state = 'opening'  # 'opening', 'idle', 'closing', 'finished'
+        self.frame_index = 0
+        self.frame_timer = 0
+        self.animation_speed = 0.2
+        self.image = self.frames_open[0]
+        self.rect = self.image.get_rect(center=(x, y))
+        self.on_finish = on_finish
+
+    def load_frames(self, path, scale):
+        img = pygame.image.load(path).convert_alpha()
+        frame_width = img.get_width() // 8  # 8 frames per row
+        frame_height = img.get_height()
+        frames = [pygame.transform.scale(
+            img.subsurface(pygame.Rect(i * frame_width, 0, frame_width, frame_height)),
+            (frame_width * scale, frame_height * scale)
+        ) for i in range(8)]
+        return frames
+
+    def update(self):
+        self.frame_timer += self.animation_speed
+        if self.state == 'opening':
+            if self.frame_timer >= 1:
+                self.frame_index += 1
+                self.frame_timer = 0
+            if self.frame_index >= len(self.frames_open):
+                self.state = 'idle'
+                self.frame_index = 0
+            else:
+                self.image = self.frames_open[min(self.frame_index, len(self.frames_open)-1)]
+        elif self.state == 'idle':
+            self.image = self.frames_idle[self.frame_index % len(self.frames_idle)]
+        elif self.state == 'closing':
+            if self.frame_timer >= 1:
+                self.frame_index += 1
+                self.frame_timer = 0
+            if self.frame_index >= len(self.frames_close):
+                self.state = 'finished'
+                if self.on_finish:
+                    self.on_finish()
+            else:
+                self.image = self.frames_close[min(self.frame_index, len(self.frames_close)-1)]
+
+    def start_closing(self):
+        self.state = 'closing'
+        self.frame_index = 0
+        self.frame_timer = 0
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect.topleft)
