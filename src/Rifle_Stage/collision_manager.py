@@ -51,3 +51,11 @@ class CollisionManager:
             if block.collidable and bullet.rect.colliderect(block.rect):
                 return True
         return False 
+    
+    @staticmethod
+    def check_enemy_block_collision(enemy, blocks):
+        """Düşman sprite'ı ve bloklar arasındaki çarpışmayı kontrol eder"""
+        for block in blocks:
+            if block.collidable and enemy.collision_rect.colliderect(block.rect):
+                return True
+        return False

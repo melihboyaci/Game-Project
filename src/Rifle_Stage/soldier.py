@@ -2,7 +2,7 @@ import pygame
 from settings import (
     PLAYER_FIRE_COOLDOWN, PLAYER_HEALTH, DEATH_ANIMATION_SPEED,
     SPRITE_SCALE, BULLET_MAX_DISTANCE, 
-    PLAYER_BULLET_SPEED, PLAYER_BULLETS, PLAYER_ULTI_COUNTER
+    PLAYER_BULLET_SPEED, PLAYER_BULLETS, PLAYER_ULTI_COUNTER, PLAYER_ULTI_COOLDOWN
 )
 
 class Player(pygame.sprite.Sprite):
@@ -133,7 +133,7 @@ class Player(pygame.sprite.Sprite):
         self.ulti_active = False
         self.ulti_bullets_left = 0
         self.ulti_timer = 0
-        self.ulti_cooldown = 2000  # 2 saniye cooldown (ms)
+        self.ulti_cooldown = PLAYER_ULTI_COOLDOWN  
         self.last_ulti_time = 0
         self.ulti_fire_interval = 60  # ms arayla mermi
         # Ulti sayaç

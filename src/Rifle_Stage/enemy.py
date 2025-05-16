@@ -9,6 +9,7 @@ from settings import (
 )
 from soldier import Player
 from objects import Bullet
+from collision_manager import CollisionManager
 
 class Enemy(Player):
     ENEMY_FIRE_SOUND = None  # Sadece bir kez yüklenecek
@@ -126,6 +127,11 @@ class Enemy(Player):
         self.death_timer = 0
         self.death_animation_speed = DEATH_ANIMATION_SPEED
 
+        # Düşman ilk oluşturulduğunda kendi sprite'ı ile başlasın
+        self.image = self.frames_idle_right[0]
+
+        self.tracking_player = False  # Takip modu
+
     def take_damage(self, damage):
         """Düşman hasar aldığında çağrılır"""
         current_time = pygame.time.get_ticks()
@@ -193,6 +199,36 @@ class Enemy(Player):
         distance = (dx ** 2 + dy ** 2) ** 0.5
         # Oyuncuya doğru yönel
         self.facing_right = dx > 0
+        # Takip modunu kontrol et (x ekseninde menzile girince başla, çıkınca bırak)
+        if abs(dx) < self.detection_range:
+            self.tracking_player = True
+        else:
+            self.tracking_player = False
+        # Takip modunda y ekseninde oyuncuya yaklaş
+        if self.tracking_player:
+            if abs(dy) > 2:  # Çok küçük farklarda hareket etmesin
+                old_rect = self.rect.copy()
+                old_collision_rect = self.collision_rect.copy()
+                if dy > 0:
+                    self.rect.y += self.speed  # Aşağı in
+                else:
+                    self.rect.y -= self.speed  # Yukarı çık
+                # Çarpışma kutusunu güncelle
+                self.collision_rect.topleft = (
+                    self.rect.left + self.karakter_offset_x,
+                    self.rect.top + self.karakter_offset_y
+                )
+                if CollisionManager.check_enemy_block_collision(self, blocks):
+                    self.rect = old_rect
+                    self.collision_rect = old_collision_rect
+                    self.moving = False
+                else:
+                    self.moving = True
+            else:
+                self.moving = False
+        else:
+            self.moving = False
+
         # Ateş etme kontrolü (sadece y ekseninde yakın olduğunda)
         if abs(dy) < ENEMY_VERTICAL_THRESHOLD and distance <= self.fire_range and current_time - self.last_fire_time > self.fire_cooldown:
             self.firing = True

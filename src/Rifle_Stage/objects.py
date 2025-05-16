@@ -142,6 +142,10 @@ class Portal(pygame.sprite.Sprite):
         self.animation_speed = 0.2
         self.image = self.frames_open[0]
         self.rect = self.image.get_rect(center=(x, y))
+        # Ortalanmış 30x30'luk collision rect, 20 piksel sağa kaydırılmış
+        self.collision_rect = pygame.Rect(0, 0, 30, 30)
+        self.collision_rect.center = self.rect.center
+        self.collision_rect.x += 120
         self.on_finish = on_finish
 
     def load_frames(self, path, scale):
@@ -156,6 +160,9 @@ class Portal(pygame.sprite.Sprite):
 
     def update(self):
         self.frame_timer += self.animation_speed
+        # Her frame'de collision_rect merkezini güncelle ve sağa kaydır
+        self.collision_rect.center = self.rect.center
+        self.collision_rect.x += 120
         if self.state == 'opening':
             if self.frame_timer >= 1:
                 self.frame_index += 1
@@ -166,6 +173,9 @@ class Portal(pygame.sprite.Sprite):
             else:
                 self.image = self.frames_open[min(self.frame_index, len(self.frames_open)-1)]
         elif self.state == 'idle':
+            if self.frame_timer >= 1:
+                self.frame_index += 1
+                self.frame_timer = 0
             self.image = self.frames_idle[self.frame_index % len(self.frames_idle)]
         elif self.state == 'closing':
             if self.frame_timer >= 1:
