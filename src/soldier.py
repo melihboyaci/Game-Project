@@ -1,7 +1,8 @@
 import pygame
 from settings import (
     PLAYER_FIRE_COOLDOWN, PLAYER_HEALTH, DEATH_ANIMATION_SPEED,
-    SPRITE_SCALE, BULLET_MAX_DISTANCE, PLAYER_BULLET_SPEED
+    SPRITE_SCALE, BULLET_MAX_DISTANCE, 
+    PLAYER_BULLET_SPEED, PLAYER_BULLETS
 )
 
 class Player(pygame.sprite.Sprite):
@@ -118,7 +119,6 @@ class Player(pygame.sprite.Sprite):
             self.karakter_yukseklik
         )
 
-        from objects import Bullet
         self.bullet_sprites = pygame.sprite.Group()
 
         self.health = PLAYER_HEALTH
@@ -201,7 +201,7 @@ class Player(pygame.sprite.Sprite):
 
         # Fire animasyonu başlat (mermi varsa ve cooldown geçtiyse)
         current_time = pygame.time.get_ticks()
-        if keys[pygame.K_SPACE] and not self.firing and (current_time - self.last_fire_time > self.fire_cooldown):
+        if keys[pygame.K_SPACE] and not self.firing and not self.reloading and (current_time - self.last_fire_time > self.fire_cooldown):
             self.firing = True
             self.fire_frame = 0
             self.fire_timer = 0
@@ -225,7 +225,7 @@ class Player(pygame.sprite.Sprite):
                         test_x = int(start_pos[0] + step * i)
                         test_y = int(start_pos[1])
                         for block in self.blocks_for_bullet:
-                            if block.rect.collidepoint(test_x, test_y):
+                            if block.collidable and block.rect.collidepoint(test_x, test_y):
                                 end_pos = (test_x, test_y)
                                 break
                         else:
@@ -285,7 +285,6 @@ class Player(pygame.sprite.Sprite):
             if self.reload_frame >= self.num_frames_reload:
                 self.reloading = False
                 self.reload_frame = 0
-                from settings import PLAYER_BULLETS
                 self.bullets = PLAYER_BULLETS
             if self.facing_right:
                 self.image = self.frames_reload_right[min(self.reload_frame, self.num_frames_reload-1)]

@@ -1,10 +1,9 @@
 import pygame
-from settings import SCREEN_WIDTH, SCREEN_HEIGHT, SPRITE_SCALE
 
 class Background:
     def __init__(self):
         # Arka plan görselini yükle
-        self.image = pygame.image.load("assets/Rifle_Stage_Assets/images/map_TEST.png").convert()
+        self.image = pygame.image.load("assets/Rifle_Stage_Assets/images/newMap_NoStones.png").convert()
         self.rect = self.image.get_rect()
         
         # Blokları tutacak grup
@@ -15,66 +14,97 @@ class Background:
     
     def create_initial_blocks(self):
         """Başlangıç bloklarını oluşturur"""
-        from objects import Block1, Block2, Stump, Tree1, Rock1, Rock2, Rock3
-        
-        # Kullanıcının eklediği blokların konumları
-        block_positions = [
-            # Block1'ler
-            (101, 164), (620, 158), (441, 510), (508, 514), (163, 398),
-            (871, 327), (462, 91),
-            # Block2'ler
-            (68, 158), (330, 182), (332, 215), (335, 248), (660, 124),
-            (695, 128), (496, 475), (498, 443), (129, 395), (203, 442),
-            (849, 368), (653, 342),
-            # Rock1'ler
-            (137, 192), (265, 370), (312, 225), (487, 278), (555, 180),
-            (698, 312), (812, 195), (900, 410), (760, 480), (210, 520),
-            # Rock2'ler
-            (180, 145), (390, 210), (470, 260), (610, 230), (720, 320),
-            (950, 370), (230, 430), (510, 490), (670, 530), (830, 570),
-            # Rock3'ler
-            (155, 260), (340, 295), (520, 340), (790, 370), (870, 420),
-            (195, 470), (410, 540), (430, 495), (600, 570), (765, 610),
-            # Stump'lar
-            (81, 204), (600, 118), (670, 460), (418, 454), (143, 348),
-            # Tree1'ler
-            (101, 164), (245, 287), (567, 423), (789, 156), (432, 589),
-            (678, 234)
-        ]
-        
-        # Block1'leri ekle
-        for x, y in block_positions[:7]:  # 0-7 arası konumlar Block1 için
+        from objects import (
+            Block1, Block2, Stump, Tree1, Rock1, Rock2, 
+            Rock3, Tower, Ruin1, Ruin2, Tower2, Ruin3
+        )
+
+        # Block1'leri ekle (x'e göre sıralı)
+        for x, y in [
+            (101, 164), (163, 398), (441, 510), (462, 91), (508, 514), (620, 158), (871, 327)
+        ]:
             block = Block1(x, y)
             self.blocks.add(block)
-        
-        # Block2'leri ekle
-        for x, y in block_positions[7:19]:  # 7-19 arası konumlar Block2 için
+
+        # Block2'leri ekle (x'e göre sıralı)
+        for x, y in [
+            (68, 158), (129, 395), (332, 215), (335, 248),
+            (498, 443), (660, 124), (695, 128), (849, 368), (1100, 550)
+        ]:
             block = Block2(x, y)
             self.blocks.add(block)
 
-        # Rock1'leri ekle
-        for x, y in block_positions[19:29]:  # 19-29 arası konumlar Rock1 için
+        # Rock1'leri ekle (x'e göre sıralı)
+        for x, y in [
+            (137, 192), (210, 520), (265, 370), (312, 225), (487, 278),
+            (555, 180), (698, 312), (760, 480), (812, 195), (900, 410)
+        ]:
             block = Rock1(x, y)
             self.blocks.add(block)
 
-        # Rock2'leri ekle
-        for x, y in block_positions[29:39]:  # 29-39 arası konumlar Rock2 için
+        # Rock2'leri ekle (x'e göre sıralı)
+        for x, y in [
+            (180, 145), (230, 430), (390, 210), (470, 260), (510, 490),
+            (610, 230), (670, 530), (720, 320), (830, 570), (950, 370)
+        ]:
             block = Rock2(x, y)
             self.blocks.add(block)
 
-        # Rock3'leri ekle
-        for x, y in block_positions[39:49]:  # 39-49 arası konumlar Rock3 için
+        # Rock3'leri ekle (x'e göre sıralı)
+        for x, y in [
+            (155, 260), (195, 470), (340, 295), (410, 540), (430, 495),
+            (520, 340), (600, 570), (765, 610), (790, 370), (870, 420)
+        ]:
             block = Rock3(x, y)
             self.blocks.add(block)
 
-        # Stump'ları ekle
-        for x, y in block_positions[49:54]:  # 49-54 arası konumlar Stump için
+        # Stump'ları ekle (x'e göre sıralı)
+        for x, y in [
+            (81, 204), (143, 348), (418, 454)
+        ]:
             block = Stump(x, y)
             self.blocks.add(block)
-        
-        # Tree1'leri ekle
-        for x, y in block_positions[54:60]:  # 54-55 arası konumlar Tree1 için
+
+        # Tree1'leri ekle (x'e göre sıralı)
+        for x, y in [
+            (245, 287), (432, 589), (567, 423), (678, 234)
+        ]:
             block = Tree1(x, y)
+            self.blocks.add(block)
+
+        # Tower'ları ekle
+        for x, y in [
+            (800, 545), (1100, 300)
+        ]:
+            block = Tower(x, y)
+            self.blocks.add(block)
+
+        # Ruin1'leri ekle
+        for x, y in [
+            (270, 55), (1000, 205)
+        ]:
+            block = Ruin1(x, y)
+            self.blocks.add(block)
+
+        # Ruin2'leri ekle
+        for x, y in [
+            (300, 50), (1030, 200)
+        ]:
+            block = Ruin2(x, y)
+            self.blocks.add(block)
+
+        # Tower2'leri ekle
+        for x, y in [
+            (100, 500),
+        ]:
+            block = Tower2(x, y)
+            self.blocks.add(block)
+
+        # Ruin3'leri ekle (x'e göre sıralı)
+        for x, y in [
+            
+        ]:
+            block = Ruin3(x, y)
             self.blocks.add(block)
 
     def draw(self, surface):

@@ -1,6 +1,6 @@
 # Screen settings
-SCREEN_WIDTH = 960
-SCREEN_HEIGHT = 640
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
 FPS = 60  # Frames per second
 
 
@@ -28,8 +28,8 @@ ENEMY_FIRE_RANGE = 450  # Düşmanın ateş edebileceği mesafe
 ENEMY_FIRE_COOLDOWN = 2000  # Düşmanın ateş etme bekleme süresi (ms)
 ENEMY_DAMAGE = 50  # Düşmanın her mermide verdiği hasar
 ENEMY_VERTICAL_THRESHOLD = 20  # Düşmanın ateş etmek için oyuncuya y ekseninde olması gereken maksimum mesafe
-ENEMY_COUNT = 4  # Başlangıçtaki düşman sayısı
-ENEMY_MIN_DISTANCE = 400  # Düşmanlar arası minimum mesafe
+ENEMY_COUNT = 10  # Başlangıçtaki düşman sayısı
+ENEMY_MIN_DISTANCE = 200  # Düşmanlar arası minimum mesafe
 ENEMY_BULLET_SPEED = 5  # Düşman mermisinin hızı
 
 # Bullet settings

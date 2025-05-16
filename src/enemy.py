@@ -212,7 +212,7 @@ class Enemy(Player):
                     test_x = int(start_pos[0] + step * i)
                     test_y = int(start_pos[1])
                     for block in blocks:
-                        if block.rect.collidepoint(test_x, test_y):
+                        if block.collidable and block.rect.collidepoint(test_x, test_y):
                             end_pos = (test_x, test_y)
                             break
                     else:

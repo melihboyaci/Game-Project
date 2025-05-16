@@ -1,6 +1,6 @@
 import pygame
 import math
-from settings import PLAYER_BULLET_SPEED, SPRITE_SCALE
+from settings import SPRITE_SCALE, SCREEN_WIDTH, SCREEN_HEIGHT
 
 class Block1(pygame.sprite.Sprite):
     def __init__(self, x, y):
@@ -17,6 +17,7 @@ class Block2(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
         self.rect = self.image.get_rect(topleft=(x, y))
         self.collidable = True
+
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, start_pos, end_pos, speed):
         super().__init__()
@@ -40,7 +41,10 @@ class Bullet(pygame.sprite.Sprite):
         self.rect.x += self.dir_x * self.speed
         self.rect.y += self.dir_y * self.speed
         self.traveled += self.speed
-        """ print(f"Bullet at {self.rect.topleft}, traveled: {self.traveled}/{self.max_distance}") """
+        # Ekran sınırları kontrolü
+        if (self.rect.right < 0 or self.rect.left > SCREEN_WIDTH or
+            self.rect.bottom < 0 or self.rect.top > SCREEN_HEIGHT):
+            self.kill()
         # Hedefe ulaştıysa sprite'ı öldür
         if self.traveled >= self.max_distance:
             """ print("Bullet killed (reached max distance)") """   
@@ -77,6 +81,7 @@ class Stump(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
         self.rect = self.image.get_rect(topleft=(x, y))
         self.collidable = True
+
 class Tree1(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -84,3 +89,43 @@ class Tree1(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
         self.rect = self.image.get_rect(topleft=(x, y))
         self.collidable = False
+
+class Tower(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        original_image = pygame.image.load("assets/Rifle_Stage_Assets/background_tileset/tower.png").convert_alpha()
+        self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.collidable = True
+
+class Tower2(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        original_image = pygame.image.load("assets/Rifle_Stage_Assets/background_tileset/tower2.png").convert_alpha()
+        self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.collidable = True
+
+class Ruin1(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        original_image = pygame.image.load("assets/Rifle_Stage_Assets/background_tileset/ruin1.png").convert_alpha()
+        self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.collidable = True
+
+class Ruin2(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        original_image = pygame.image.load("assets/Rifle_Stage_Assets/background_tileset/ruin2.png").convert_alpha()
+        self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.collidable = True
+
+class Ruin3(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        original_image = pygame.image.load("assets/Rifle_Stage_Assets/background_tileset/ruin3.png").convert_alpha()
+        self.image = pygame.transform.scale(original_image, (original_image.get_width(), original_image.get_height()))
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.collidable = True
