@@ -167,14 +167,14 @@ def draw_health_bar(screen, health, max_health=15):
 def draw_base_health_bar(screen, base, camera, health, max_health=10):
     if not base.alive:
         return
-    base_screen_x = base.position[0] - camera.pos[0]
-    base_screen_y = base.position[1] - camera.pos[1]
+    pos = base.get_healthbar_pos()
     bar_width = 300
-    bar_height = 30
-    
+    bar_height = 20
     health = max(0, min(int(health), max_health))
     bar_image = pygame.image.load(f"assets/Space_Stage_Assets/sprites/enemybase/health_bar/{health}.png").convert_alpha()
     bar_image = pygame.transform.scale(bar_image, (bar_width, bar_height))
-    bar_x = base_screen_x
-    bar_y = base_screen_y - bar_height - 10
+    bar_x = pos[0] + 70
+    bar_y = pos[1] + 50
+    bar_x -= camera.pos[0]
+    bar_y -= camera.pos[1]
     screen.blit(bar_image, (bar_x, bar_y))

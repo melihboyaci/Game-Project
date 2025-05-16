@@ -75,7 +75,8 @@ class EnemyBase:
                 self.alive = False
 
     def draw(self, surface, camera_offset):
-        pygame.draw.rect(surface, (255,0,0), self.get_rect().move(-camera_offset[0], -camera_offset[1]), 2)
+        # düşman rectini göster
+        #pygame.draw.rect(surface, (255,0,0), self.get_rect().move(-camera_offset[0], -camera_offset[1]), 2)
         surface_pos = (self.position[0] - camera_offset[0], self.position[1] - camera_offset[1])
         new_size = (int(self.size[0] * self.scale), int(self.size[1] * self.scale))
         
@@ -113,6 +114,9 @@ class EnemyBase:
     def take_damage(self, damage):
         # Hasar alındığında yapılacak işlemler
         self.health -= damage
+        sound = pygame.mixer.Sound("assets/Space_Stage_Assets/sounds/hit1.mp3")
+        sound.set_volume(0.8)
+        sound.play()
         if self.health <= 0:
             self.destroy()
             self.alive = False
@@ -120,7 +124,16 @@ class EnemyBase:
     def destroy(self):
         self.destruction = True
         self.destruction_time = pygame.time.get_ticks()
-        
 
     def get_rect(self):
-        return pygame.Rect(self.position[0]+30, self.position[1]+70, int(self.size[0] * 3), int(self.size[1] * 3))
+        x = self.position[0] + 30
+        y = self.position[1] + 20
+        width = int(self.size[0] * 3)
+        height = int(self.size[1] * 3)
+        return pygame.Rect(x, y, width, height)
+
+    def get_healthbar_pos(self):
+        # Base'in üst kısmının biraz altında, base ile beraber hareket eden bir nokta
+        x = self.position[0]
+        y = self.position[1] + 10  # üstten 10 piksel aşağıda
+        return (x, y)

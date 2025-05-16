@@ -31,7 +31,7 @@ class EnemyManager:
         self.base_vulnerable = False
 
         self.enemies = []
-        self.spawn_time = 2000
+        self.spawn_time = 100
         self.last_spawn_time = pygame.time.get_ticks()
         self.wave = 1
         self.max_enemies = 10

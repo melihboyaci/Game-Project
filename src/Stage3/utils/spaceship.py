@@ -13,7 +13,6 @@ class Spaceship:
         self.map_width = 2000  # Harita genişliği
         self.map_height = 2000
         self.health = 15
-        self.exploading = False
         self.scale = scale
         self.gun = None
         self.gun_sprite = None
