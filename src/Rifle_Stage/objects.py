@@ -35,7 +35,6 @@ class Bullet(pygame.sprite.Sprite):
         self.start_pos = start_pos
         self.traveled = 0
         self.max_distance = distance
-        """ print(f"Bullet created at {start_pos} towards {end_pos}")"""
 
     def update(self):
         self.rect.x += self.dir_x * self.speed
@@ -47,7 +46,6 @@ class Bullet(pygame.sprite.Sprite):
             self.kill()
         # Hedefe ulaştıysa sprite'ı öldür
         if self.traveled >= self.max_distance:
-            """ print("Bullet killed (reached max distance)") """   
             self.kill() 
 
 class Rock1(pygame.sprite.Sprite):
@@ -142,7 +140,7 @@ class Portal(pygame.sprite.Sprite):
         self.animation_speed = 0.2
         self.image = self.frames_open[0]
         self.rect = self.image.get_rect(center=(x, y))
-        # Ortalanmış 30x30'luk collision rect, 20 piksel sağa kaydırılmış
+        # Ortalanmış 30x30'luk collision rect, 120 piksel sağa kaydırılmış
         self.collision_rect = pygame.Rect(0, 0, 30, 30)
         self.collision_rect.center = self.rect.center
         self.collision_rect.x += 120

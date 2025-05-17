@@ -31,7 +31,7 @@ def start_game():
         enemy_manager = EnemyManager(num_enemies=ENEMY_COUNT, min_distance=ENEMY_MIN_DISTANCE)
         enemy_manager.spawn_enemies(background.get_blocks())
         # Portal ile giriş
-        portal_x = PLAYER_START_X + 40  # Karakterin ortasına göre ayarla
+        portal_x = PLAYER_START_X + 0  # Karakterin ortasına göre ayarla
         portal_y = PLAYER_START_Y + 30
         portal = Portal(portal_x, portal_y, scale=2)
         player = None
