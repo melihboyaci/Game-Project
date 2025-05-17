@@ -155,6 +155,11 @@ def draw_earth_bar(screen, earth_bar):
     pygame.draw.rect(screen, (100, 100 ,100), (bar_x, bar_y, bar_width, bar_height))
     pygame.draw.rect(screen, (0, 200, 0), (bar_x, bar_y, bar_width * (earth_bar / 100), bar_height))
 
+    font = pygame.font.Font(None, 24)
+    text = render_text_with_stroke(font, f"Dünya: {earth_bar}%", (255, 255, 255), (0, 0, 0), 2)
+    text_rect = text.get_rect(center=(bar_x + bar_width // 2, bar_y + bar_height // 2))
+    screen.blit(text, text_rect)
+
 def draw_health_bar(screen, health, max_health=15):
 
     health = max(0, min(int(health), max_health))
@@ -163,6 +168,11 @@ def draw_health_bar(screen, health, max_health=15):
     bar_x = 20
     bar_y = screen.get_height() - bar_image.get_height() - 20
     screen.blit(bar_image, (bar_x, bar_y))
+
+    font = pygame.font.Font(None, 32)
+    text = render_text_with_stroke(font, "HP", (0, 255, 0), (0, 0, 0), 2)
+    text_rect = text.get_rect(center=(bar_x + bar_image.get_width() // 2, bar_y - 7))
+    screen.blit(text, text_rect)
 
 def draw_base_health_bar(screen, base, camera, health, max_health=10):
     if not base.alive:

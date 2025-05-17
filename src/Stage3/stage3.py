@@ -106,12 +106,14 @@ class game_loop:
             if self.enemy_manager.base_vulnerable and self.enemy_manager.enemy_base.alive:
                 draw_base_health_bar(self.screen, self.enemy_manager.enemy_base, self.camera, self.enemy_manager.enemy_base.health)            
             if self.earth.destroyed:
-                wait_time = 1000
+                print("Döngüye girdi, destroyed:", self.earth.destroyed, "explosion_time:", self.earth.explosion_time, pygame.time.get_ticks())
+                wait_time = 3000
                 if pygame.time.get_ticks() - self.earth.explosion_time > wait_time:
-                    running = False
+                    break
                     # Burada oyunun bitiş ekranını göster
                     # Örneğin, bir fonksiyon çağırabilirsiniz
                     # game_over_screen(self.screen)
+            
             pygame.display.flip() #ekran güncelle
 
             self.clock.tick(60) # FPS ayarla
