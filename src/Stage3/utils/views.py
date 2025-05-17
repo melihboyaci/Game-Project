@@ -189,7 +189,7 @@ def draw_base_health_bar(screen, base, camera, health, max_health=10):
     bar_y -= camera.pos[1]
     screen.blit(bar_image, (bar_x, bar_y))
 
-def game_over_menu(screen):
+def game_over_menu(screen, draw_game_callback=None):
     options = ['Restart', 'Quit']
     selected = 0
     font = pygame.font.Font(None, 48)
@@ -204,7 +204,11 @@ def game_over_menu(screen):
                     selected = (selected + 1) % len(options)
                 elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
                     return options[selected].lower()
-        screen.fill((0, 0, 0))
+        if draw_game_callback:
+            draw_game_callback()
+        overlay = pygame.Surface(screen.get_size(), pygame.SRCALPHA)
+        overlay.fill((0, 0, 0, 180))
+        screen.blit(overlay, (0, 0))
         title_text = font.render('GAME OVER', True, (255, 0, 0))
         screen.blit(title_text, (screen.get_width() // 2 - title_text.get_width() // 2, 200))
         for i, option in enumerate(options):
@@ -212,7 +216,8 @@ def game_over_menu(screen):
             option_text = font.render(option, True, color)
             screen.blit(option_text, (screen.get_width() // 2 - option_text.get_width() // 2, 300 + i * 40))
         pygame.display.flip()
-        pygame.time.Clock().tick(30)
+        pygame.time.Clock().tick(60)
+
 
 def game_complete_menu(screen, draw_game_callback):
     options = ['Continue', 'Restart', 'Quit']
@@ -247,4 +252,4 @@ def game_complete_menu(screen, draw_game_callback):
             option_y = screen.get_height() // 2 + i * 30
             screen.blit(option_text, (option_x, option_y))
         pygame.display.flip()
-        pygame.time.Clock().tick(30)
+        pygame.time.Clock().tick(60)

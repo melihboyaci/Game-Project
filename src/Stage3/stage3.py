@@ -7,11 +7,13 @@ from .managers.enemy_manager import EnemyManager
 from .managers.planet_manager import PlanetManager
 from .utils.earth import Earth
 from .utils.portal import Portal
+from .utils.views import render_text_with_stroke
 
 class game_loop:
     def __init__(self, screen, clock):
         self.screen = screen
         self.clock = clock
+        self.font = pygame.font.Font(None, 28)
         self.width, self.height = screen.get_size()
         self.bg_offset = {'x': 0, 'y': 0}
         self.bg_speed  = {'x': -0.1, 'y': 0.2}
@@ -75,6 +77,9 @@ class game_loop:
         self.emerge_start_time = pygame.time.get_ticks()
         self.spaceship_visible = False
         self.portal_open_time = None
+
+        self.base_vulnerable_shown = False
+        self.base_vulnerable_time = 0
 
 
     def draw_game(self):
@@ -147,22 +152,28 @@ class game_loop:
             self.enemy_manager.update(self.spaceship)
             self.enemy_manager.draw(self.screen)
 
-            print(self.spaceship.position)
             draw_earth_bar(self.screen, self.enemy_manager.earth_bar)
             draw_health_bar(self.screen, self.spaceship.health)
             if self.enemy_manager.base_vulnerable and self.enemy_manager.enemy_base.alive:
                 draw_base_health_bar(self.screen, self.enemy_manager.enemy_base, self.camera, self.enemy_manager.enemy_base.health)            
             
+            # Enemy base hasar alabilir durumda ise yazıyı göster
+            if self.enemy_manager.base_vulnerable:
+                text = render_text_with_stroke(self.font, "Düşman üssü savunmasız!", (255, 255, 255), (0, 0, 0), 2)
+                text_rect = text.get_rect(center=(self.screen.get_width() // 2, 100))
+                self.screen.blit(text, text_rect)
+            
             if self.earth.destroyed:
-                print("Döngüye girdi, destroyed:", self.earth.destroyed, "explosion_time:", self.earth.explosion_time, pygame.time.get_ticks())
                 wait_time = 2000
                 if pygame.time.get_ticks() - self.earth.explosion_time > wait_time:
-                    result = game_over_menu(self.screen)
+                    result = game_over_menu(self.screen, draw_game_callback=self.draw_game)
                     if result == "restart":
-                        game_loop.run(self)
+                        return "restart"
                     elif result == "quit":
-                        running = False
-            
+                        pygame.quit()
+                        exit()
+
+
             pygame.display.flip() #ekran güncelle
 
             self.clock.tick(60) # FPS ayarla

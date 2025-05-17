@@ -40,7 +40,6 @@ class Earth(Planet):
             self.explosion_sprite.pos = tuple(self.position)
             self.explosion_sprite.update()
             if pygame.time.get_ticks() - self.explosion_time > self.explosion_duration:
-                print("girdi mi")
                 self.exploding = False
                 self.destroyed = True
             return

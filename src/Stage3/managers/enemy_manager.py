@@ -13,11 +13,13 @@ class EnemyManager:
 
         base_path = "assets/Space_Stage_Assets/sprites/enemybase/base.png"
         base_size = (128, 128)
+        y_offset = 150  # İstediğin kadar artırabilirsin
+
         corners = [
-            (0, 0),  # Sol Üst
-            (self.camera.map_width - base_size[0] * 4, 0),  # Sağ Üst
-            (0, self.camera.map_height - base_size[1] * 4),  # Sol Alt
-            (self.camera.map_width - base_size[0] * 4, self.camera.map_height - base_size[1] * 4)  # Sağ Alt
+            (0, 0 + y_offset),  # Sol Üst
+            (self.camera.map_width - base_size[0] * 4, 0 + y_offset),  # Sağ Üst
+            (0, self.camera.map_height - base_size[1] * 4 + y_offset),  # Sol Alt
+            (self.camera.map_width - base_size[0] * 4, self.camera.map_height - base_size[1] * 4 + y_offset)  # Sağ Alt
         ]
         max_distance = -1
         base_pos = None
@@ -31,7 +33,7 @@ class EnemyManager:
         self.base_vulnerable = False
 
         self.enemies = []
-        self.spawn_time = 100
+        self.spawn_time = 2000
         self.last_spawn_time = pygame.time.get_ticks()
         self.wave = 1
         self.max_enemies = 10
@@ -122,8 +124,8 @@ class EnemyManager:
                     break
             if enemy.get_rect().colliderect(self.earth.get_rect()):
                 enemies_to_remove.append(enemy)
-                self.earth.health -= 100
-                self.earth_bar -= 100
+                self.earth.health -= 10
+                self.earth_bar -= 10
             for bullet in spaceship.bullets[:]:
                 if bullet.get_rect().colliderect(enemy.get_rect()):
                     enemy.take_damage(1)

@@ -11,11 +11,14 @@ clock = pygame.time.Clock()
 
 def main():
     pygame.init()
-    start_screen(screen, clock)
-
-    game = game_loop(screen, clock) 
+    """start_screen(screen, clock)"""
     
-    game.run()
+    while True:
+        clock.tick(60)
+        game = game_loop(screen, clock)
+        result = game.run()
+        if result != "restart":
+            break 
     pygame.quit()
     sys.exit()
 
