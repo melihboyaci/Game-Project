@@ -7,6 +7,11 @@ class Player:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+
+
+        self.can_control = False  # Başta kontrol edilemez
+        self.auto_walk = False
+
         self.speed = 4
         self.direction = "right"  # default yön
         self.is_player = True # Oyuncu karakteri
@@ -20,7 +25,7 @@ class Player:
         }
 
         self.attack1_sound = pygame.mixer.Sound("assets/Middle_Age_Assets/sounds/sword-normal.mp3")
-        self.attack1_sound.set_volume(0.3)
+        self.attack1_sound.set_volume(0.2)
 
         self.attack2_sound = pygame.mixer.Sound("assets/Middle_Age_Assets/sounds/sword-ultimate.mp3")
         self.attack2_sound.set_volume(0.5)
@@ -44,7 +49,7 @@ class Player:
         # Attack tuşları
         self.attack_keys = {
             "attack1": pygame.K_SPACE,
-            "attack2": pygame.K_k
+            "attack2": pygame.K_t
         }
 
         # Hasarlar
@@ -114,6 +119,9 @@ class Player:
             self.animations[state]["left"]  = [pygame.transform.flip(f, True, False) for f in base_frames]
 
     def handle_input(self, solid_rects, all_characters):
+        if self.state == "death":
+            return  # input handle yok, karakter kontrol edilemez
+
         TILE_SIZE = 32
         if self.state == "hurt" and pygame.time.get_ticks() - self.hurt_timer < 300:
             return
@@ -124,14 +132,14 @@ class Player:
         self.rect.center = (self.x, self.y)
 
         dx, dy = 0, 0
-        if keys[pygame.K_w]:
+        if keys[pygame.K_UP]:
             dy = -1
-        if keys[pygame.K_s]:
+        if keys[pygame.K_DOWN]:
             dy = 1
-        if keys[pygame.K_a]:
+        if keys[pygame.K_LEFT]:
             dx = -1
             self.direction = "left"
-        if keys[pygame.K_d]:
+        if keys[pygame.K_RIGHT]:
             dx = 1
             self.direction = "right"
 
@@ -208,20 +216,20 @@ class Player:
         now = pygame.time.get_ticks()
         if now - self.frame_timer > self.frame_speed:
             self.frame_timer = now
-            self.frame_index += 1
+            if self.state != "death" or self.frame_index < len(self.animations[self.state][self.direction]) - 1:
+                self.frame_index += 1
 
             # Eğer animasyonun son karesine ulaşıldıysa
             if self.frame_index >= len(self.animations[self.state][self.direction]):
                 if self.state == "hurt":
-                    self.state = "idle"  # Hasar alma animasyonu bittiğinde 'idle' durumuna geç
+                    self.state = "idle"
+                    self.frame_index = 0
                 elif self.state.startswith("attack"):
-                    self.state = "idle"  # Saldırı animasyonu bittiğinde 'idle' durumuna geç
-                elif self.state == "death":
-                    self.frame_index = len(self.animations["death"][self.direction]) - 1  # Ölüm animasyonunda son karede kal
-                    return
-                self.frame_index = 0  # Animasyonu sıfırla
+                    self.state = "idle"
+                    self.frame_index = 0
+                elif self.state != "death":
+                    self.frame_index = len(self.animations[self.state][self.direction]) - 1
 
-            # Geçerli animasyon karesini güncelle
             self.image = self.animations[self.state][self.direction][self.frame_index]
 
     def draw_health_bar(self, surface):
@@ -245,16 +253,16 @@ class Player:
 
         bar_width = 100
         bar_height = 20
-        x = 250  # Sağlık barının hemen sağında
-        y = 20
+        x = 370  # Sağlık barının hemen sağında
+        y = 24
         pygame.draw.rect(surface, (50, 50, 50), (x, y, bar_width, bar_height))  # Arkaplan (gri)
         pygame.draw.rect(surface, (0, 0, 255), (x, y, bar_width * cooldown_ratio, bar_height))  # Cooldown (mavi)
         pygame.draw.rect(surface, (0, 0, 0), (x, y, bar_width, bar_height), 2)  # Çerçeve
 
     def draw_attack_info_message(self, surface):
         font = pygame.font.Font(None, 25)
-        text = font.render("K:", True, (255, 255, 255))
-        surface.blit(text, (230, 20))  # Mesaj ekranın sol üstünde gösterilir
+        text = font.render("Özel Yetenek (T):", True, (255, 255, 255))
+        surface.blit(text, (230, 22))  # Mesaj ekranın sol üstünde gösterilir
 
 
     def attack(self, enemies):
@@ -301,8 +309,6 @@ class Player:
     def die(self):
         """Player öldüğünde yapılacak işlemler"""
         print("Player öldü! Oyun bitti.")
-        pygame.quit()
-        exit()
 
     #çarpışma kontrolü için
     def get_collision_rect(self):
@@ -328,13 +334,8 @@ class Player:
     def update(self):
         # Eğer 'death' durumundaysa, animasyonu tamamla ve oyunu sonlandır
         if self.state == "death":
-            if self.frame_index >= len(self.animations["death"][self.direction]) - 1:
-                print("Player öldü! Oyun sonlandırılıyor.")
-                pygame.quit()
-                exit()
-            else:
-                self.update_animation()
-                return
+            self.update_animation()
+            return
 
         # Eğer 'hurt' durumundaysa, başka bir duruma geçme
         if self.state == "hurt":
@@ -396,6 +397,24 @@ class Player:
         dx = enemy_center[0] - center[0]
         dy = enemy_center[1] - center[1]
         return dx*dx + dy*dy <= radius*radius
+
+    def auto_walk_forward(self, distance=64):
+        """Player'ı sağa doğru distance kadar otomatik yürüt."""
+        if not hasattr(self, "_auto_walk_start_x"):
+            self._auto_walk_start_x = self.x
+        walk_speed = 2    
+        if self.x < self._auto_walk_start_x + distance:
+            self.x += walk_speed
+            self.state = "walk"
+            self.direction = "right"
+            self.rect.center = (self.x, self.y)
+            self.update_animation()
+            return False  # Hala yürüyor
+        else:
+            self.auto_walk = False
+            self.can_control = True
+            del self._auto_walk_start_x
+            return True   # Yürüyüş bitti
 
     def is_within_map(self,rect):
         """Verilen rect'in harita sınırları içinde olup olmadığını kontrol eder."""
