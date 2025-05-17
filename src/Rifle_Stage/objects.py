@@ -147,6 +147,15 @@ class Portal(pygame.sprite.Sprite):
         self.collision_rect.center = self.rect.center
         self.collision_rect.x += 120
         self.on_finish = on_finish
+        # Portal idle sesini yükle
+        self.idle_sound = pygame.mixer.Sound('assets/Rifle_Stage_Assets/sounds/portal_idle.mp3')
+        self.idle_sound_channel = None
+        self.idle_sound_playing = False
+        # Açılış ve kapanış sesleri
+        self.open_sound = pygame.mixer.Sound('assets/Rifle_Stage_Assets/sounds/portal_open.mp3')
+        self.close_sound = pygame.mixer.Sound('assets/Rifle_Stage_Assets/sounds/portal_close.mp3')
+        self.open_sound_played = False
+        self.close_sound_played = False
 
     def load_frames(self, path, scale):
         img = pygame.image.load(path).convert_alpha()
@@ -164,12 +173,19 @@ class Portal(pygame.sprite.Sprite):
         self.collision_rect.center = self.rect.center
         self.collision_rect.x += 120
         if self.state == 'opening':
+            # Açılış sesi bir kez çal
+            if not self.open_sound_played:
+                self.open_sound.play()
+                self.open_sound_played = True
             if self.frame_timer >= 1:
                 self.frame_index += 1
                 self.frame_timer = 0
             if self.frame_index >= len(self.frames_open):
                 self.state = 'idle'
                 self.frame_index = 0
+                # Sesleri sıfırla
+                self.open_sound_played = False  # Bir sonraki açılış için sıfırla
+                self.close_sound_played = False  # Kapanıştan döndüyse sıfırla
             else:
                 self.image = self.frames_open[min(self.frame_index, len(self.frames_open)-1)]
         elif self.state == 'idle':
@@ -177,21 +193,38 @@ class Portal(pygame.sprite.Sprite):
                 self.frame_index += 1
                 self.frame_timer = 0
             self.image = self.frames_idle[self.frame_index % len(self.frames_idle)]
+            # Idle ses kontrolü
+            if not self.idle_sound_playing:
+                self.idle_sound_channel = self.idle_sound.play(-1)  # Döngüde çal
+                self.idle_sound_playing = True
         elif self.state == 'closing':
+            # Kapanış sesi bir kez çal
+            if not self.close_sound_played:
+                self.close_sound.play()
+                self.close_sound_played = True
             if self.frame_timer >= 1:
                 self.frame_index += 1
                 self.frame_timer = 0
             if self.frame_index >= len(self.frames_close):
                 self.state = 'finished'
+                # Sesleri sıfırla
+                self.close_sound_played = False  # Bir sonraki kapanış için sıfırla
+                self.open_sound_played = False  # Açılıştan döndüyse sıfırla
                 if self.on_finish:
                     self.on_finish()
             else:
                 self.image = self.frames_close[min(self.frame_index, len(self.frames_close)-1)]
+            # Idle ses kontrolü
+            if self.idle_sound_playing:
+                if self.idle_sound_channel:
+                    self.idle_sound_channel.stop()
+                self.idle_sound_playing = False
 
     def start_closing(self):
         self.state = 'closing'
         self.frame_index = 0
         self.frame_timer = 0
+        self.close_sound_played = False  # Kapanış başında flag sıfırla
 
     def draw(self, surface):
         surface.blit(self.image, self.rect.topleft)

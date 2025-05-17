@@ -98,6 +98,40 @@ def game_over_menu(screen, font, draw_game_callback):
         pygame.display.flip()
         pygame.time.Clock().tick(30)
 
+def game_complete_menu(screen, font, draw_game_callback):
+    options = ['Continue', 'Restart', 'Quit']
+    selected = 0
+    box_width = 1280
+    box_height = 720
+    box_color = (0, 0, 0, 180)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return 'quit'
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP or event.key == pygame.K_LEFT:
+                    selected = (selected - 1) % len(options)
+                elif event.key == pygame.K_DOWN or event.key == pygame.K_RIGHT:
+                    selected = (selected + 1) % len(options)
+                elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
+                    return options[selected].lower()
+        draw_game_callback()
+        overlay = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
+        overlay.fill(box_color)
+        screen.blit(overlay, (0, 0))
+        title_text = font.render('BÖLÜM BİTTİ', True, (0, 255, 0))
+        title_x = screen.get_width() // 2 - title_text.get_width() // 2
+        title_y = screen.get_height() // 2 - 120
+        screen.blit(title_text, (title_x, title_y))
+        for i, option in enumerate(options):
+            color = (255, 255, 0) if i == selected else (200, 200, 200)
+            option_text = font.render(option, True, color)
+            option_x = screen.get_width() // 2 - option_text.get_width() // 2
+            option_y = screen.get_height() // 2 + i * 30
+            screen.blit(option_text, (option_x, option_y))
+        pygame.display.flip()
+        pygame.time.Clock().tick(30)
+
 def game_loop(screen, background, player, enemy_manager, font, bullet_icon, hp_icon, enemy_icon, ultimate_icon, FPS):
     clock = pygame.time.Clock()
     running = True
@@ -171,6 +205,9 @@ def game_loop(screen, background, player, enemy_manager, font, bullet_icon, hp_i
                 portal_end_state = 'closed'
                 portal_end = None
                 portal_end_group = None
+                # Bölüm bitti menüsü göster
+                result = game_complete_menu(screen, font, draw_game)
+                return result
         draw_game()
         pygame.display.flip()
         clock.tick(FPS)
