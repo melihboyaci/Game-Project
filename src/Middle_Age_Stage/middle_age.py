@@ -99,7 +99,7 @@ total_spawned = len(enemies)
 
 
 killed_enemies = 0
-TARGET_KILL = 50
+TARGET_KILL = 20
 
 portal_wait_timer = None
 PORTAL_WAIT_DURATION = 1000  # ms
@@ -160,6 +160,7 @@ while running:
                         portal_wait_timer = None
                         end_portal_idle_timer = None
                         last_spawn_time = pygame.time.get_ticks()
+                        player.can_control = True
 
                     elif death_menu_options[selected_option] == "Çıkış":
                         pygame.quit()

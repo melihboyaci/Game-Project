@@ -25,7 +25,7 @@ class Player:
         }
 
         self.attack1_sound = pygame.mixer.Sound("assets/Middle_Age_Assets/sounds/sword-normal.mp3")
-        self.attack1_sound.set_volume(0.3)
+        self.attack1_sound.set_volume(0.2)
 
         self.attack2_sound = pygame.mixer.Sound("assets/Middle_Age_Assets/sounds/sword-ultimate.mp3")
         self.attack2_sound.set_volume(0.5)
@@ -49,7 +49,7 @@ class Player:
         # Attack tuşları
         self.attack_keys = {
             "attack1": pygame.K_SPACE,
-            "attack2": pygame.K_k
+            "attack2": pygame.K_t
         }
 
         # Hasarlar
@@ -132,14 +132,14 @@ class Player:
         self.rect.center = (self.x, self.y)
 
         dx, dy = 0, 0
-        if keys[pygame.K_w]:
+        if keys[pygame.K_UP]:
             dy = -1
-        if keys[pygame.K_s]:
+        if keys[pygame.K_DOWN]:
             dy = 1
-        if keys[pygame.K_a]:
+        if keys[pygame.K_LEFT]:
             dx = -1
             self.direction = "left"
-        if keys[pygame.K_d]:
+        if keys[pygame.K_RIGHT]:
             dx = 1
             self.direction = "right"
 
@@ -253,16 +253,16 @@ class Player:
 
         bar_width = 100
         bar_height = 20
-        x = 250  # Sağlık barının hemen sağında
-        y = 20
+        x = 370  # Sağlık barının hemen sağında
+        y = 24
         pygame.draw.rect(surface, (50, 50, 50), (x, y, bar_width, bar_height))  # Arkaplan (gri)
         pygame.draw.rect(surface, (0, 0, 255), (x, y, bar_width * cooldown_ratio, bar_height))  # Cooldown (mavi)
         pygame.draw.rect(surface, (0, 0, 0), (x, y, bar_width, bar_height), 2)  # Çerçeve
 
     def draw_attack_info_message(self, surface):
         font = pygame.font.Font(None, 25)
-        text = font.render("K:", True, (255, 255, 255))
-        surface.blit(text, (230, 20))  # Mesaj ekranın sol üstünde gösterilir
+        text = font.render("Özel Yetenek (T):", True, (255, 255, 255))
+        surface.blit(text, (230, 22))  # Mesaj ekranın sol üstünde gösterilir
 
 
     def attack(self, enemies):
