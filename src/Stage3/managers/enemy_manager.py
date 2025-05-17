@@ -15,9 +15,9 @@ class EnemyManager:
         base_size = (128, 128)
         corners = [
             (0, 0),  # Sol Üst
-            (self.camera.map_width - base_size[0], 0),  # Sağ Üst
-            (0, self.camera.map_height - base_size[1]),  # Sol Alt
-            (self.camera.map_width - base_size[0], self.camera.map_height - base_size[1])  # Sağ Alt
+            (self.camera.map_width - base_size[0] * 4, 0),  # Sağ Üst
+            (0, self.camera.map_height - base_size[1] * 4),  # Sol Alt
+            (self.camera.map_width - base_size[0] * 4, self.camera.map_height - base_size[1] * 4)  # Sağ Alt
         ]
         max_distance = -1
         base_pos = None
@@ -149,7 +149,6 @@ class EnemyManager:
          # --- DÜZELTİLMİŞ DALGA BİTİŞ KONTROLÜ ---
         if self.wave == 2 and self.enemies_this_wave == self.max_enemies and len(self.enemies) == 0:
             self.base_vulnerable = True
-            print("Base artık vulnerable!")  # Debug için
         
         if len(self.enemies) == 0 and self.enemies_this_wave == self.max_enemies:
             self.wave += 1

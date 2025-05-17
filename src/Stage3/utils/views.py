@@ -169,9 +169,9 @@ def draw_health_bar(screen, health, max_health=15):
     bar_y = screen.get_height() - bar_image.get_height() - 20
     screen.blit(bar_image, (bar_x, bar_y))
 
-    font = pygame.font.Font(None, 32)
-    text = render_text_with_stroke(font, "HP", (0, 255, 0), (0, 0, 0), 2)
-    text_rect = text.get_rect(center=(bar_x + bar_image.get_width() // 2, bar_y - 7))
+    font = pygame.font.Font(None, 28)
+    text = render_text_with_stroke(font, "HP:", (255, 255, 255), (0, 0, 0), 2)
+    text_rect = text.get_rect(center=(bar_x + 25, bar_y))
     screen.blit(text, text_rect)
 
 def draw_base_health_bar(screen, base, camera, health, max_health=10):
@@ -188,3 +188,63 @@ def draw_base_health_bar(screen, base, camera, health, max_health=10):
     bar_x -= camera.pos[0]
     bar_y -= camera.pos[1]
     screen.blit(bar_image, (bar_x, bar_y))
+
+def game_over_menu(screen):
+    options = ['Restart', 'Quit']
+    selected = 0
+    font = pygame.font.Font(None, 48)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return 'quit'
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP or event.key == pygame.K_LEFT:
+                    selected = (selected - 1) % len(options)
+                elif event.key == pygame.K_DOWN or event.key == pygame.K_RIGHT:
+                    selected = (selected + 1) % len(options)
+                elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
+                    return options[selected].lower()
+        screen.fill((0, 0, 0))
+        title_text = font.render('GAME OVER', True, (255, 0, 0))
+        screen.blit(title_text, (screen.get_width() // 2 - title_text.get_width() // 2, 200))
+        for i, option in enumerate(options):
+            color = (255, 255, 0) if i == selected else (200, 200, 200)
+            option_text = font.render(option, True, color)
+            screen.blit(option_text, (screen.get_width() // 2 - option_text.get_width() // 2, 300 + i * 40))
+        pygame.display.flip()
+        pygame.time.Clock().tick(30)
+
+def game_complete_menu(screen, draw_game_callback):
+    options = ['Continue', 'Restart', 'Quit']
+    selected = 0
+    box_width = 1280
+    box_height = 720
+    box_color = (0, 0, 0, 180)
+    font = pygame.font.Font("assets/Space_Stage_Assets/fonts/altroned.ttf", 48)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return 'quit'
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP or event.key == pygame.K_LEFT:
+                    selected = (selected - 1) % len(options)
+                elif event.key == pygame.K_DOWN or event.key == pygame.K_RIGHT:
+                    selected = (selected + 1) % len(options)
+                elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
+                    return options[selected].lower()
+        draw_game_callback()
+        overlay = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
+        overlay.fill(box_color)
+        screen.blit(overlay, (0, 0))
+        title_text = font.render('BÖLÜM BİTTİ', True, (0, 255, 0))
+        title_x = screen.get_width() // 2 - title_text.get_width() // 2
+        title_y = screen.get_height() // 2 - 120
+        screen.blit(title_text, (title_x, title_y))
+        for i, option in enumerate(options):
+            color = (255, 255, 0) if i == selected else (200, 200, 200)
+            option_text = font.render(option, True, color)
+            option_x = screen.get_width() // 2 - option_text.get_width() // 2
+            option_y = screen.get_height() // 2 + i * 30
+            screen.blit(option_text, (option_x, option_y))
+        pygame.display.flip()
+        pygame.time.Clock().tick(30)

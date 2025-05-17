@@ -1,3 +1,4 @@
+import sys
 import pygame
 
 from src.Stage3.utils.views import start_screen
@@ -16,6 +17,7 @@ def main():
     
     game.run()
     pygame.quit()
+    sys.exit()
 
 
 if __name__ == "__main__": 
