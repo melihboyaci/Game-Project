@@ -156,7 +156,7 @@ def start_middle_age():
             enemies.append(Enemy.Enemy(x * TILE_SIZE, y * TILE_SIZE))
     total_spawned = len(enemies)
     killed_enemies = 0
-    TARGET_KILL = 20
+    TARGET_KILL = 30
     portal_wait_timer = None
     PORTAL_WAIT_DURATION = 1000  # ms
     solid_rects = tile_assets.create_solid_rects()  # Yürünemez alanları oluştur
@@ -239,6 +239,9 @@ def start_middle_age():
             # --- OYUN BAŞLANGIÇ AKIŞI ---
             if player.auto_walk:
                 player.auto_walk_forward(distance=64)
+            elif player.can_control:
+                player.handle_input(solid_rects, all_characters)
+                player.attack(enemies)
 
             # PORTAL_WAIT_DURATION sadece portalı etkiler, oyun akışı devam eder
             if portal_wait_timer is not None:
@@ -250,9 +253,6 @@ def start_middle_age():
                     portal_wait_timer = None
 
             # Oyun her zamanki gibi devam eder
-            if player.can_control:
-                player.handle_input(solid_rects, all_characters)
-                player.attack(enemies)
             player.update()
 
             # Enemy update ve animasyonları
@@ -302,13 +302,9 @@ def start_middle_age():
                     game_over = True
             # pygame.draw.rect(tile_assets.screen, (255,0,0), portal_hitbox, 2)  # hitbox'ı görsel olarak test etmek için
 
-
-        
-
         if player_visible:
             player.draw(tile_assets.screen)
 
-            
         for enemy in enemies:
             enemy.draw(tile_assets.screen)
 
@@ -343,6 +339,7 @@ def start_middle_age():
                 import sys; sys.exit()
 
         pygame.display.update()
+        clock.tick(60)  # FPS limiti eklendi
 
     return "next"
 
