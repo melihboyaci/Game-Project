@@ -28,14 +28,23 @@
   Her seviyenin sonunda bir portal aktive edilerek sonraki çağ başlatılır.
 - **Sağlık ve Mühimmat Yönetimi.**
 
-## 📷 Görseller  
-> (assets/screenshots/opening.png)  
-> (assets/screenshots/middle_age.png)  
-> (assets/screenshots/rifle_stage.png)
-> (assets/screenshots/rifle_stage2.png)  
-> (assets/screenshots/space_stage1.png)
-> (assets/screenshots/space_stage2.png)
-> (assets/screenshots/space_stage3.png)      
+## 📷 Görseller
+
+### Oyun Açılışı
+![Oyun Açılışı](assets/screenshots/opening.png)
+
+### Orklar Diyarı
+![Orklar Diyarı](assets/screenshots/middle_age.png)
+
+### Sürgün Ajan
+![Sürgün Ajan](assets/screenshots/rifle_stage.png)
+![Sürgün Ajan - Bölüm 2](assets/screenshots/rifle_stage2.png)
+
+### Uzayın Derinlikleri
+![Uzay Sahnesi 1](assets/screenshots/space_stage1.png)
+![Uzay Sahnesi 2](assets/screenshots/space_stage2.png)
+![Uzay Sahnesi 3](assets/screenshots/space_stage3.png)
+   
 
 ## 🚀 Kurulum ve Çalıştırma
 
