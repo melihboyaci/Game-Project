@@ -13,10 +13,8 @@ from collision_manager import CollisionManager
 from settings import ENEMY_DAMAGE
 from objects import Portal
 
-def start_game():
+def start_rifle_stage():
     while True:
-        pygame.init()
-        pygame.mixer.init()
         screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
         pygame.display.set_caption(TITLE)
 
@@ -61,8 +59,13 @@ def start_game():
                 portal_sequence_done = True
         result = game_loop(screen, background, player, enemy_manager, font, bullet_icon, hp_icon, enemy_icon, ultimate_icon, FPS)
         if result == 'quit':
-            pygame.quit()
-            sys.exit()
+            return 'quit'
+        elif result == 'next':
+            return 'next'
+
+# Eski start_game fonksiyonu ana fonksiyona yönlendirsin
+def start_game():
+    return start_rifle_stage()
 
 def game_over_menu(screen, font, draw_game_callback):
     options = ['Restart', 'Quit']
@@ -114,7 +117,10 @@ def game_complete_menu(screen, font, draw_game_callback):
                 elif event.key == pygame.K_DOWN or event.key == pygame.K_RIGHT:
                     selected = (selected + 1) % len(options)
                 elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
-                    return options[selected].lower()
+                    if options[selected].lower() == 'continue':
+                        return 'next'
+                    else:
+                        return options[selected].lower()
         draw_game_callback()
         overlay = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
         overlay.fill(box_color)
@@ -211,4 +217,4 @@ def game_loop(screen, background, player, enemy_manager, font, bullet_icon, hp_i
         draw_game()
         pygame.display.flip()
         clock.tick(FPS)
-    pygame.quit() 
+    return 'quit' 

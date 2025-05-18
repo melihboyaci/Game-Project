@@ -1,13 +1,13 @@
 import pygame, random
-from .utils.planet import Planet
-from .utils.views import draw_scrolling_bg, draw_earth_bar, draw_health_bar, draw_base_health_bar, game_complete_menu, game_over_menu
-from .utils.spaceship import Spaceship
-from .utils.camera import Camera
-from .managers.enemy_manager import EnemyManager
-from .managers.planet_manager import PlanetManager
-from .utils.earth import Earth
-from .utils.portal import Portal
-from .utils.views import render_text_with_stroke
+from utils.planet import Planet
+from utils.views import draw_scrolling_bg, draw_earth_bar, draw_health_bar, draw_base_health_bar, game_complete_menu, game_over_menu
+from utils.spaceship import Spaceship
+from utils.camera import Camera
+from managers.enemy_manager import EnemyManager
+from managers.planet_manager import PlanetManager
+from utils.earth import Earth
+from utils.portal import Portal
+from utils.views import render_text_with_stroke
 
 class game_loop:
     def __init__(self, screen, clock):
@@ -170,11 +170,17 @@ class game_loop:
                     if result == "restart":
                         return "restart"
                     elif result == "quit":
-                        pygame.quit()
-                        exit()
+                        return "quit"
 
 
             pygame.display.flip() #ekran güncelle
 
             self.clock.tick(60) # FPS ayarla
+
+def start_space_stage():
+    screen = pygame.display.set_mode((1280, 720))
+    clock = pygame.time.Clock()
+    game = game_loop(screen, clock)
+    game.run()
+    return "next"
 

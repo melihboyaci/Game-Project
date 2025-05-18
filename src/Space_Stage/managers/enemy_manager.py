@@ -1,7 +1,10 @@
 import pygame
-from ..utils.enemy_spaceship import EnemySpaceship
-from ..utils.enemybase import EnemyBase
-from ..utils.animation import load_sprite_sheet, AnimatedSprite
+import random
+from utils.enemy_spaceship import EnemySpaceship
+from utils.earth import Earth
+from utils.views import draw_earth_bar
+from utils.enemybase import EnemyBase
+from utils.animation import load_sprite_sheet, AnimatedSprite
 ENEMY_COUNT = 0
 class EnemyManager:
     def __init__(self, camera, earth, earth_bar):

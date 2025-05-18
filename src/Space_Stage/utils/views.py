@@ -71,8 +71,7 @@ def start_screen(screen, clock, WINDOW_WIDTH=1280, WINDOW_HEIGHT=720):
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                pygame.quit()
-                exit()
+                waiting = False
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 pygame.mixer.music.stop()
                 waiting = False 

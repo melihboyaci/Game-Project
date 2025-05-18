@@ -218,6 +218,12 @@ class Portal(pygame.sprite.Sprite):
                     self.idle_sound_channel.stop()
                 self.idle_sound_playing = False
 
+        # Portal tamamen bittiyse idle sesi kesin dursun
+        if self.state == 'finished' and self.idle_sound_playing:
+            if self.idle_sound_channel:
+                self.idle_sound_channel.stop()
+            self.idle_sound_playing = False
+
     def start_closing(self):
         self.state = 'closing'
         self.frame_index = 0

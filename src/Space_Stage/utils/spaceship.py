@@ -1,6 +1,6 @@
 import pygame
-from .animation import AnimatedSprite, load_sprite_sheet
-from .bullet import Bullet
+from utils.animation import AnimatedSprite, load_sprite_sheet
+from utils.bullet import Bullet
 
 class Spaceship:
     def __init__(self, image_path, size, position, speed, engine_path=None, engine_powering_path=None, engine_size=None, gun_path=None, scale=1):

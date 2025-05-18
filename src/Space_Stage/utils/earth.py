@@ -1,6 +1,6 @@
 import pygame
-from .planet import Planet
-from .animation import load_sprite_sheet, AnimatedSprite
+from utils.planet import Planet
+from utils.animation import load_sprite_sheet, AnimatedSprite
 
 class Earth(Planet):
     def __init__(self, image_path, size, position, scale):

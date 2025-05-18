@@ -1,5 +1,5 @@
 import pygame
-from .animation import AnimatedSprite, load_sprite_sheet
+from utils.animation import AnimatedSprite, load_sprite_sheet
 import random
 class Planet:
     def __init__(self, image_path, size, position, scale):
