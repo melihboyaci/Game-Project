@@ -191,7 +191,7 @@ def draw_base_health_bar(screen, base, camera, health, max_health=10):
 def game_over_menu(screen, draw_game_callback=None):
     options = ['Restart', 'Quit']
     selected = 0
-    font = pygame.font.Font(None, 48)
+    font = pygame.font.Font("assets/fonts/menu.TTF", 48)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -224,7 +224,7 @@ def game_complete_menu(screen, draw_game_callback):
     box_width = 1280
     box_height = 720
     box_color = (0, 0, 0, 180)
-    font = pygame.font.Font("assets/Space_Stage_Assets/fonts/altroned.ttf", 48)
+    font = pygame.font.Font("assets/fonts/menu.TTF", 48)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

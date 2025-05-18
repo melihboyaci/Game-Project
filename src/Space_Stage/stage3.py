@@ -172,6 +172,15 @@ class game_loop:
                     elif result == "quit":
                         return "quit"
 
+            # DÜŞMAN ÜSSÜ YOK EDİLDİYSE BÖLÜM BİTİŞ MENÜSÜ
+            if not self.enemy_manager.enemy_base.alive:
+                result = game_complete_menu(self.screen, draw_game_callback=self.draw_game)
+                if result == "continue":
+                    return "next"
+                elif result == "restart":
+                    return "restart"
+                elif result == "quit":
+                    return "quit"
 
             pygame.display.flip() #ekran güncelle
 

@@ -116,9 +116,7 @@ game_over = False
 continue_button_rect = pygame.Rect(tile_assets.screen.get_width() // 2 - 80, tile_assets.screen.get_height() // 2 + 40, 160, 50)
 
 death_menu_active = False
-death_menu_options = ["Yeniden Dene", "Çıkış"]
-selected_option = 0
-cutscene_shown = False  # Cutscene sadece bir kez gösterilsin
+death_menu_timer = None
 
 def start_middle_age():
     TILE_SIZE = 32
@@ -166,53 +164,39 @@ def start_middle_age():
     game_over = False
     continue_button_rect = pygame.Rect(tile_assets.screen.get_width() // 2 - 80, tile_assets.screen.get_height() // 2 + 40, 160, 50)
     death_menu_active = False
-    death_menu_options = ["Yeniden Dene", "Çıkış"]
-    selected_option = 0
-    cutscene_shown = False  # Cutscene sadece bir kez gösterilsin
+    death_menu_timer = None
     while running:
-        dt = clock.tick(60)
+        if death_menu_active:
+            # Ölümden sonra 1 saniye bekle
+            if death_menu_timer is not None and pygame.time.get_ticks() - death_menu_timer < 1000:
+                continue
+            def draw_game():
+                tile_assets.screen.fill((0, 0, 0))
+                tile_assets.draw_map()
+                if not portal.finished:
+                    portal.draw(tile_assets.screen)
+                if end_portal_active and end_portal is not None:
+                    end_portal.update()
+                    end_portal.draw_flipped(tile_assets.screen)
+                for enemy in enemies:
+                    enemy.draw(tile_assets.screen)
+                font = pygame.font.Font(None, 36)
+                text = font.render(f"{killed_enemies}/{TARGET_KILL}", True, (255, 255, 255))
+                tile_assets.screen.blit(text, (tile_assets.screen.get_width() // 2 - 40, 20))
+            result = game_over_menu(tile_assets.screen, draw_game)
+            if result == 'restart':
+                return start_middle_age()
+            elif result == 'quit':
+                pygame.quit()
+                exit()
+            continue
+
         now = pygame.time.get_ticks()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
 
-            if death_menu_active:
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_UP:
-                        selected_option = (selected_option - 1) % len(death_menu_options)
-                    elif event.key == pygame.K_DOWN:
-                        selected_option = (selected_option + 1) % len(death_menu_options)
-                    elif event.key == pygame.K_RETURN:
-                        if death_menu_options[selected_option] == "Yeniden Dene":
-                            # Oyunu sıfırlama işlemi
-                            player = Player.Player(player_start_x, player_start_y)
-                            portal = Portal.Portal(player_start_x + player.rect.width // 4, player_start_y + (player.rect.height // 4)-20, scale_factor=2)
-                            enemies = []
-                            for _ in range(MAX_ACTIVE_ENEMY-5):
-                                pos = get_random_walkable_position()
-                                if pos:
-                                    x, y = pos
-                                    enemies.append(Enemy.Enemy(x * TILE_SIZE, y * TILE_SIZE))
-                            total_spawned = len(enemies)
-                            killed_enemies = 0
-                            end_portal_active = False
-                            end_portal = None
-                            player_visible = True
-                            player_in_end_portal = False
-                            game_over = False
-                            death_menu_active = False
-                            selected_option = 0
-                            player.auto_walk = True
-                            portal_wait_timer = None
-                            end_portal_idle_timer = None
-                            last_spawn_time = pygame.time.get_ticks()
-                            player.can_control = True
-
-                        elif death_menu_options[selected_option] == "Çıkış":
-                            pygame.quit()
-                            exit()
-            
             if game_over and event.type == pygame.MOUSEBUTTONDOWN:
                 if continue_button_rect.collidepoint(event.pos):
                     print("Devam Et butonuna tıklandı!")
@@ -221,9 +205,11 @@ def start_middle_age():
         if not game_over and not death_menu_active:
 
             if player.state == "death":
-                 # Ölüm animasyonu bittiyse menüyü aç
+                # Ölüm animasyonu bittiyse menüyü aç
                 if player.frame_index >= len(player.animations["death"][player.direction]) - 1:
-                    death_menu_active = True   
+                    if not death_menu_active:
+                        death_menu_active = True
+                        death_menu_timer = pygame.time.get_ticks()
 
             # --- Oyun güncellemeleri ---
             if not end_portal_active and killed_enemies >= TARGET_KILL:
@@ -331,39 +317,29 @@ def start_middle_age():
 
         # --- Oyun bitti overlay ve buton ---
         if game_over:
-            # Saydam overlay
-            overlay = pygame.Surface(tile_assets.screen.get_size(), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 180))  # RGBA, alpha=180 ile yarı saydam siyah
-            tile_assets.screen.blit(overlay, (0, 0))
-
-            # Tebrikler mesajı
-            font_big = pygame.font.Font(None, 64)
-            congrats_text = font_big.render("Tebrikler!", True, (255, 255, 0))
-            tile_assets.screen.blit(congrats_text, (tile_assets.screen.get_width() // 2 - congrats_text.get_width() // 2, tile_assets.screen.get_height() // 2 - 80))
-
-            # Devam Et butonu
-            pygame.draw.rect(tile_assets.screen, (50, 200, 50), continue_button_rect)
-            font_btn = pygame.font.Font(None, 36)
-            btn_text = font_btn.render("Devam Et", True, (255, 255, 255))
-            tile_assets.screen.blit(btn_text, (continue_button_rect.centerx - btn_text.get_width() // 2, continue_button_rect.centery - btn_text.get_height() // 2))
-         
-
-        if death_menu_active:
-            # Saydam overlay
-            overlay = pygame.Surface(tile_assets.screen.get_size(), pygame.SRCALPHA)
-            overlay.fill((0, 0, 0, 180))
-            tile_assets.screen.blit(overlay, (0, 0))
-
-            font_big = pygame.font.Font(None, 64)
-            death_text = font_big.render("Öldün!", True, (255, 0, 0))
-            tile_assets.screen.blit(death_text, (tile_assets.screen.get_width() // 2 - death_text.get_width() // 2, tile_assets.screen.get_height() // 2 - 100))
-
-            font_opt = pygame.font.Font(None, 48)
-            for i, option in enumerate(death_menu_options):
-                color = (255, 255, 0) if i == selected_option else (255, 255, 255)
-                option_text = font_opt.render(option, True, color)
-                tile_assets.screen.blit(option_text, (tile_assets.screen.get_width() // 2 - option_text.get_width() // 2, tile_assets.screen.get_height() // 2 + i * 60))
-
+            def draw_game():
+                tile_assets.screen.fill((0, 0, 0))
+                tile_assets.draw_map()
+                if not portal.finished:
+                    portal.draw(tile_assets.screen)
+                if end_portal_active and end_portal is not None:
+                    end_portal.update()
+                    end_portal.draw_flipped(tile_assets.screen)
+                if player_visible:
+                    player.draw(tile_assets.screen)
+                for enemy in enemies:
+                    enemy.draw(tile_assets.screen)
+                font = pygame.font.Font(None, 36)
+                text = font.render(f"{killed_enemies}/{TARGET_KILL}", True, (255, 255, 255))
+                tile_assets.screen.blit(text, (tile_assets.screen.get_width() // 2 - 40, 20))
+            result = stage_complete_menu(tile_assets.screen, draw_game)
+            if result == 'next':
+                return 'next'
+            elif result == 'restart':
+                return start_middle_age()
+            elif result == 'quit':
+                pygame.quit()
+                exit()
 
         pygame.display.update()
 
@@ -372,6 +348,93 @@ def start_middle_age():
 # Eğer bu dosya doğrudan çalıştırılırsa eski davranış devam etsin
 def main():
     start_middle_age()
+
+# --- STAGE COMPLETE MENU ---
+def stage_complete_menu(screen, draw_game_callback):
+    options = ['Continue', 'Try Again', 'Quit']
+    selected = 0
+    box_width = screen.get_width()
+    box_height = screen.get_height()
+    box_color = (0, 0, 0, 180)
+    font = pygame.font.Font("assets/fonts/menu.TTF", 48)
+    btn_font = pygame.font.Font("assets/fonts/menu.TTF", 36)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return 'quit'
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP or event.key == pygame.K_LEFT:
+                    selected = (selected - 1) % len(options)
+                elif event.key == pygame.K_DOWN or event.key == pygame.K_RIGHT:
+                    selected = (selected + 1) % len(options)
+                elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
+                    if options[selected] == 'Continue':
+                        return 'next'
+                    elif options[selected] == 'Try Again':
+                        return 'restart'
+                    elif options[selected] == 'Quit':
+                        return 'quit'
+        # Draw game background first
+        if draw_game_callback:
+            draw_game_callback()
+        # Draw overlay
+        overlay = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
+        overlay.fill(box_color)
+        screen.blit(overlay, (0, 0))
+        # Title
+        title_text = font.render('STAGE COMPLETED', True, (0, 255, 0))
+        title_x = screen.get_width() // 2 - title_text.get_width() // 2
+        title_y = screen.get_height() // 2 - 120
+        screen.blit(title_text, (title_x, title_y))
+        # Options
+        for i, option in enumerate(options):
+            color = (255, 255, 0) if i == selected else (200, 200, 200)
+            option_text = btn_font.render(option, True, color)
+            option_x = screen.get_width() // 2 - option_text.get_width() // 2
+            option_y = screen.get_height() // 2 + i * 40
+            screen.blit(option_text, (option_x, option_y))
+        pygame.display.flip()
+        pygame.time.Clock().tick(30)
+
+# --- GAME OVER MENU ---
+def game_over_menu(screen, draw_game_callback):
+    options = ['Try Again', 'Quit']
+    selected = 0
+    box_width = screen.get_width()
+    box_height = screen.get_height()
+    box_color = (0, 0, 0, 180)
+    font = pygame.font.Font("assets/fonts/menu.TTF", 48)
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                return 'quit'
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP or event.key == pygame.K_LEFT:
+                    selected = (selected - 1) % len(options)
+                elif event.key == pygame.K_DOWN or event.key == pygame.K_RIGHT:
+                    selected = (selected + 1) % len(options)
+                elif event.key == pygame.K_RETURN or event.key == pygame.K_KP_ENTER:
+                    if options[selected] == 'Try Again':
+                        return 'restart'
+                    elif options[selected] == 'Quit':
+                        return 'quit'
+        if draw_game_callback:
+            draw_game_callback()
+        overlay = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
+        overlay.fill(box_color)
+        screen.blit(overlay, (0, 0))
+        title_text = font.render('GAME OVER', True, (255, 0, 0))
+        title_x = screen.get_width() // 2 - title_text.get_width() // 2
+        title_y = screen.get_height() // 2 - 120
+        screen.blit(title_text, (title_x, title_y))
+        for i, option in enumerate(options):
+            color = (255, 255, 0) if i == selected else (200, 200, 200)
+            option_text = font.render(option, True, color)
+            option_x = screen.get_width() // 2 - option_text.get_width() // 2
+            option_y = screen.get_height() // 2 + i * 40
+            screen.blit(option_text, (option_x, option_y))
+        pygame.display.flip()
+        pygame.time.Clock().tick(30)
 
 if __name__ == "__main__":
     main()

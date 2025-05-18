@@ -73,6 +73,7 @@ def game_over_menu(screen, font, draw_game_callback):
     box_width = 1280
     box_height = 720
     box_color = (0, 0, 0, 180)
+    font = pygame.font.Font("assets/fonts/menu.TTF", 48)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -96,7 +97,7 @@ def game_over_menu(screen, font, draw_game_callback):
             color = (255, 255, 0) if i == selected else (200, 200, 200)
             option_text = font.render(option, True, color)
             option_x = screen.get_width() // 2 - option_text.get_width() // 2
-            option_y = screen.get_height() // 2 + i * 30
+            option_y = screen.get_height() // 2 + i * 40
             screen.blit(option_text, (option_x, option_y))
         pygame.display.flip()
         pygame.time.Clock().tick(30)
@@ -107,6 +108,7 @@ def game_complete_menu(screen, font, draw_game_callback):
     box_width = 1280
     box_height = 720
     box_color = (0, 0, 0, 180)
+    font = pygame.font.Font("assets/fonts/menu.TTF", 48)
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -125,7 +127,7 @@ def game_complete_menu(screen, font, draw_game_callback):
         overlay = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
         overlay.fill(box_color)
         screen.blit(overlay, (0, 0))
-        title_text = font.render('BÖLÜM BİTTİ', True, (0, 255, 0))
+        title_text = font.render('STAGE COMPLETED', True, (0, 255, 0))
         title_x = screen.get_width() // 2 - title_text.get_width() // 2
         title_y = screen.get_height() // 2 - 120
         screen.blit(title_text, (title_x, title_y))
@@ -133,7 +135,7 @@ def game_complete_menu(screen, font, draw_game_callback):
             color = (255, 255, 0) if i == selected else (200, 200, 200)
             option_text = font.render(option, True, color)
             option_x = screen.get_width() // 2 - option_text.get_width() // 2
-            option_y = screen.get_height() // 2 + i * 30
+            option_y = screen.get_height() // 2 + i * 40
             screen.blit(option_text, (option_x, option_y))
         pygame.display.flip()
         pygame.time.Clock().tick(30)
