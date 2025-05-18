@@ -38,11 +38,14 @@
 
 ### Sürgün Ajan
 ![Sürgün Ajan](assets/screenshots/rifle_stage.png)
+
 ![Sürgün Ajan - Bölüm 2](assets/screenshots/rifle_stage2.png)
 
 ### Uzayın Derinlikleri
 ![Uzay Sahnesi 1](assets/screenshots/space_stage1.png)
+
 ![Uzay Sahnesi 2](assets/screenshots/space_stage2.png)
+
 ![Uzay Sahnesi 3](assets/screenshots/space_stage3.png)
    
 
