@@ -156,7 +156,7 @@ def start_middle_age():
             enemies.append(Enemy.Enemy(x * TILE_SIZE, y * TILE_SIZE))
     total_spawned = len(enemies)
     killed_enemies = 0
-    TARGET_KILL = 1
+    TARGET_KILL = 20
     portal_wait_timer = None
     PORTAL_WAIT_DURATION = 1000  # ms
     solid_rects = tile_assets.create_solid_rects()  # Yürünemez alanları oluştur

@@ -75,7 +75,24 @@ def start_screen(screen, clock, WINDOW_WIDTH=1280, WINDOW_HEIGHT=720):
             y = WINDOW_HEIGHT // 2 - total_height // 2
             for s in subtitle_surfaces:
                 screen.blit(s, (WINDOW_WIDTH // 2 - s.get_width() // 2, y))
-                y += s.get_height() + 10  # Satırlar arası boşluk
+                y += s.get_height() + 10
+        
+
+        # KONTROLLERİ SOL ALT KÖŞEYE ÇİZ!
+        controls = [
+            "Kontroller",
+            "Yön Tuşları: Hareket",
+            "SPACE: Ateş Et / Başlat",
+        ]
+        font_controls = pygame.font.Font(None, 28)
+        # Satırların toplam yüksekliğini hesapla
+        total_height = sum(font_controls.size(line)[1] + 5 for line in controls)
+        y_controls = screen.get_height() - total_height - 30  # 30px yukarıdan başla
+        for line in controls:
+            text = font_controls.render(line, False, (180, 180, 180))
+            screen.blit(text, (30, y_controls))
+            y_controls += text.get_height() + 5
+
         pygame.display.flip()
 
         for event in pygame.event.get():

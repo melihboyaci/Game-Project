@@ -41,7 +41,7 @@ class Player:
         self.rect = self.image.get_rect(center=(self.x, self.y))
 
         # Sağlık
-        self.health = 10  # Maksimum sağlık
+        self.health = 300  # Maksimum sağlık
         self.max_health = 300
 
         

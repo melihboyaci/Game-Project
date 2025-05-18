@@ -16,7 +16,7 @@ class EnemyManager:
 
         base_path = "assets/Space_Stage_Assets/sprites/enemybase/base.png"
         base_size = (128, 128)
-        y_offset = 150  # İstediğin kadar artırabilirsin
+        y_offset = 170  # İstediğin kadar artırabilirsin
 
         corners = [
             (0, 0 + y_offset),  # Sol Üst
@@ -87,7 +87,7 @@ class EnemyManager:
                 image_path=enemy_type["image_path"],
                 size=size,
                 position=spawn_pos,
-                speed=3.2,
+                speed=3.3,
                 target=self.earth,
                 engine_path=enemy_type["engine_path"],
                 engine_size=enemy_type["engine_size"],

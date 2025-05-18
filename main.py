@@ -30,7 +30,8 @@ def main():
         "assets/cutscenes_assets/middle-age-opening-1.png",
         "assets/cutscenes_assets/background-music-16s.mp3",
         duration=4,
-        subtitle="Zaman Kaydırma Motoru... Kontrolden çıktı. \n Gözlerimi açtığımda kendimi bu... bu ilkel cehennemde buldum."
+        subtitle="Zaman Kaydırma Motoru... Kontrolden çıktı. \n Gözlerimi açtığımda kendimi bu... bu ilkel cehennemde buldum.",
+        title="Stage 1: Middle Age"
     )
     play_cutscene(
         screen,
@@ -65,7 +66,8 @@ def main():
         "assets/cutscenes_assets/rifle-stage-opening-1.png",
         "assets/cutscenes_assets/background-music-16s.mp3",
         duration=4,
-        subtitle="O antik portal... beni bambaşka bir çağa, bambaşka bir vahşete getirdi."
+        subtitle="O anlık portal... beni bambaşka bir çağa, bambaşka bir vahşete getirdi.",
+        title="Stage 2: Rifle Age"
     )
     play_cutscene(
         screen,
@@ -100,7 +102,8 @@ def main():
         "assets/cutscenes_assets/space-stage-opening-1.png",
         "assets/cutscenes_assets/background-music-16s.mp3",
         duration=4,
-        subtitle="İki çağ boyunca süren mücadele... Zamanın labirentlerinde kayboluş... \n Ve şimdi, her şeyin başladığı ve bittiği yerdeyim: uzayın sonsuz karanlığında."
+        subtitle="İki çağ boyunca süren mücadele... Zamanın labirentlerinde kayboluş... \n Ve şimdi, her şeyin başladığı ve bittiği yerdeyim: uzayın sonsuz karanlığında.",
+        title="Stage 3: Space Age"
     )
     play_cutscene(
         screen,
