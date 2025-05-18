@@ -41,7 +41,8 @@ def start_rifle_stage():
         while not portal_sequence_done:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    return
+                    pygame.quit()
+                    sys.exit()
             background.draw(screen)
             enemy_manager.draw(screen, background.get_blocks())  # Düşmanlar sadece çizilecek, hareket etmeyecek
             portal_group.update()
@@ -77,7 +78,8 @@ def game_over_menu(screen, font, draw_game_callback):
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return 'quit'
+                pygame.quit()
+                sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP or event.key == pygame.K_LEFT:
                     selected = (selected - 1) % len(options)
@@ -112,7 +114,8 @@ def game_complete_menu(screen, font, draw_game_callback):
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return 'quit'
+                pygame.quit()
+                sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP or event.key == pygame.K_LEFT:
                     selected = (selected - 1) % len(options)
@@ -159,8 +162,8 @@ def game_loop(screen, background, player, enemy_manager, font, bullet_icon, hp_i
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
-                return 'quit'
+                pygame.quit()
+                sys.exit()
         keys = pygame.key.get_pressed()
         old_rect = player.rect.copy()
         old_collision_rect = player.collision_rect.copy()

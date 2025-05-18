@@ -188,14 +188,15 @@ def start_middle_age():
                 return start_middle_age()
             elif result == 'quit':
                 pygame.quit()
-                exit()
+                import sys; sys.exit()
             continue
 
         now = pygame.time.get_ticks()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                pygame.quit()
+                import sys; sys.exit()
 
             if game_over and event.type == pygame.MOUSEBUTTONDOWN:
                 if continue_button_rect.collidepoint(event.pos):
@@ -339,7 +340,7 @@ def start_middle_age():
                 return start_middle_age()
             elif result == 'quit':
                 pygame.quit()
-                exit()
+                import sys; sys.exit()
 
         pygame.display.update()
 

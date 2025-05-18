@@ -42,7 +42,8 @@ def play_cutscene(screen, image_path, music_path=None, duration=3, subtitle=None
     while time.time() - start_time < duration:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return
+                pygame.quit()
+                import sys; sys.exit()
         keys = pygame.key.get_pressed()
         if keys[pygame.K_ESCAPE]:
             break

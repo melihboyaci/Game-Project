@@ -80,7 +80,8 @@ def start_screen(screen, clock, WINDOW_WIDTH=1280, WINDOW_HEIGHT=720):
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                waiting = False
+                pygame.quit()
+                import sys; sys.exit()
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 pygame.mixer.music.stop()
                 waiting = False 
@@ -204,7 +205,8 @@ def game_over_menu(screen, draw_game_callback=None):
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return 'quit'
+                pygame.quit()
+                import sys; sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP or event.key == pygame.K_LEFT:
                     selected = (selected - 1) % len(options)
@@ -237,7 +239,8 @@ def game_complete_menu(screen, draw_game_callback):
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                return 'quit'
+                pygame.quit()
+                import sys; sys.exit()
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP or event.key == pygame.K_LEFT:
                     selected = (selected - 1) % len(options)
