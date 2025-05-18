@@ -269,7 +269,7 @@ def game_complete_menu(screen, draw_game_callback):
         overlay = pygame.Surface((box_width, box_height), pygame.SRCALPHA)
         overlay.fill(box_color)
         screen.blit(overlay, (0, 0))
-        title_text = font.render('BÖLÜM BİTTİ', True, (0, 255, 0))
+        title_text = font.render('STAGE COMPLETED', True, (0, 255, 0))
         title_x = screen.get_width() // 2 - title_text.get_width() // 2
         title_y = screen.get_height() // 2 - 120
         screen.blit(title_text, (title_x, title_y))
