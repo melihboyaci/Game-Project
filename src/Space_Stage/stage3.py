@@ -91,15 +91,14 @@ class game_loop:
         
     
     def run(self):
-
+        sound = pygame.mixer.Sound("assets/Space_Stage_Assets/sounds/space_journey.mp3")
+        sound.set_volume(0.2)
         # Oyun döngüsü
         running = True
         while running:
             #get_busy() ile müziğin çalıp çalmadığını kontrol et
-            if not pygame.mixer.music.get_busy():
-                pygame.mixer.music.load("assets/Space_Stage_Assets/sounds/space_journey.mp3")
-                pygame.mixer.music.set_volume(0.2)
-                pygame.mixer.music.play(-1) # Sonsuz döngüde çal
+            if not sound.get_busy():
+                sound.play(-1) # Sonsuz döngüde çal
 
             #space tuşuna basıldığında ateş et
             for event in pygame.event.get():
@@ -166,6 +165,7 @@ class game_loop:
             if self.earth.destroyed:
                 wait_time = 2000
                 if pygame.time.get_ticks() - self.earth.explosion_time > wait_time:
+                    sound.stop()  # <-- Müzik burada durduruluyor
                     result = game_over_menu(self.screen, draw_game_callback=self.draw_game)
                     if result == "restart":
                         return "restart"
@@ -174,6 +174,7 @@ class game_loop:
 
             # DÜŞMAN ÜSSÜ YOK EDİLDİYSE BÖLÜM BİTİŞ MENÜSÜ
             if not self.enemy_manager.enemy_base.alive:
+                sound.stop()  # <-- Müzik burada durduruluyor
                 result = game_complete_menu(self.screen, draw_game_callback=self.draw_game)
                 if result == "continue":
                     return "next"

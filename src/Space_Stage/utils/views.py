@@ -1,27 +1,32 @@
 import pygame
 def start_screen(screen, clock, WINDOW_WIDTH=1280, WINDOW_HEIGHT=720):
     
-    pygame.mixer.music.load("assets/Space_Stage_Assets/sounds/2.mp3")
-    pygame.mixer.music.set_volume(0.5)
+    pygame.mixer.music.load("assets/cutscenes_assets/opening-background-music.mp3")
+    pygame.mixer.music.set_volume(1)
     pygame.mixer.music.play(-1)
     
-    backgrounds = []
-    for i in range(1, 11):
-        background = pygame.image.load(f"assets/Space_Stage_Assets/ui/start_background/{i}.png").convert_alpha()
+    """backgrounds = []
+    for i in range(1, 1):
         background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
-        backgrounds.append(background)
+        backgrounds.append(background)"""
 
-    
-    font = pygame.font.Font("assets/Space_Stage_Assets/fonts/altroned.ttf", 50)
-    title = render_text_with_shadow(font, "My Game", (255, 255, 255), (50,50,50), (6, 6))
-    subtitle = render_text_with_stroke(font, "Press SPACE to Start", (255, 255, 255), (0, 0, 0), 6)
+    font = pygame.font.Font("assets/fonts/menu.ttf", 60)
+    title = render_text_with_shadow(font, "Gate of Ages", (255, 255, 255), (50,50,50), (6, 6))
+    subtitle_lines = ["Press", "SPACE", "to Start"]
+    font2 = pygame.font.Font("assets/fonts/menu.ttf", 30)
+    subtitle_surfaces = [render_text_with_shadow(font2, line, (255, 255, 255), (50,50,50), (6, 6)) for line in subtitle_lines]
+    background = pygame.image.load("assets/cutscenes_assets/opening-game-1.png").convert_alpha()
+    background = pygame.transform.scale(background, (WINDOW_WIDTH, WINDOW_HEIGHT))
+    screen.blit(background, (0, 0))
+
+
 
     # Geçiş süreleri
-    alpha_values = [0] * len(backgrounds)
+    """alpha_values = [0] * len(backgrounds)
     current_idx = 0
     fade_duration = 100
     switch_time = 250
-    last_switch_time = pygame.time.get_ticks()
+    last_switch_time = pygame.time.get_ticks()"""
 
     # Metinlerin gecikme süreleri
     title_delay = 1000
@@ -41,7 +46,7 @@ def start_screen(screen, clock, WINDOW_WIDTH=1280, WINDOW_HEIGHT=720):
         now = pygame.time.get_ticks()
 
         # Alfa değerlerini güncelle
-        dt = max(clock.get_time(), 1)
+        """dt = max(clock.get_time(), 1)
         if current_idx < len(backgrounds):
             alpha_values[current_idx] += 255 / (fade_duration / dt)
             if alpha_values[current_idx] >= 255:
@@ -52,21 +57,25 @@ def start_screen(screen, clock, WINDOW_WIDTH=1280, WINDOW_HEIGHT=720):
         
         if now - visible_time > last_time:
             subtitle_visible = not subtitle_visible
-            last_time = now
+            last_time = now"""
 
         # Görseller
-        screen.fill((0, 0, 0))
+        """screen.fill((0, 0, 0))
         for i in range(len(backgrounds)):
             if alpha_values[i] > 0:
                 background = backgrounds[i].copy()
                 background.set_alpha(int(alpha_values[i]))
-                screen.blit(background, (0, 0))
+                screen.blit(background, (0, 0))"""
 
         # Metinler
         if now > title_start_time:
             screen.blit(title, (WINDOW_WIDTH // 2 - title.get_width() // 2, 70))
         if now > subtitle_start_time and subtitle_visible:
-            screen.blit(subtitle, (WINDOW_WIDTH // 2 - subtitle.get_width() // 2, WINDOW_HEIGHT // 2 - subtitle.get_height() // 2))
+            total_height = sum(s.get_height() for s in subtitle_surfaces) + 10 * (len(subtitle_surfaces) - 1)
+            y = WINDOW_HEIGHT // 2 - total_height // 2
+            for s in subtitle_surfaces:
+                screen.blit(s, (WINDOW_WIDTH // 2 - s.get_width() // 2, y))
+                y += s.get_height() + 10  # Satırlar arası boşluk
         pygame.display.flip()
 
         for event in pygame.event.get():
